@@ -11,6 +11,11 @@ const SHEET_ID       = import.meta.env.VITE_SHEET_ID        || '';
 const API_KEY        = import.meta.env.VITE_SHEETS_API_KEY  || '';
 const SHEETS_ENABLED = !!(SHEET_ID && API_KEY);
 
+// Temporary debug — remove after confirming Sheets connection works
+console.log('[STF] SHEET_ID:', SHEET_ID ? `set (${SHEET_ID.length} chars)` : 'EMPTY');
+console.log('[STF] API_KEY:', API_KEY ? `set (${API_KEY.length} chars)` : 'EMPTY');
+console.log('[STF] SHEETS_ENABLED:', SHEETS_ENABLED);
+
 // ── Low-level Sheets read ─────────────────────────────────────────────────────
 async function sheetsRead(range) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?key=${API_KEY}`;
