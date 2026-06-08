@@ -6,6 +6,7 @@ import RAList from './pages/RAList';
 import RAEditor from './pages/RAEditor';
 import RAPreview from './pages/RAPreview';
 import StaffSettings from './pages/StaffSettings';
+import RAWizard from './pages/RAWizard';
 
 function AppShell() {
   const { isAdmin, logout } = useAuth();
@@ -14,6 +15,7 @@ function AppShell() {
   const [activeRA, setActiveRA] = useState(null);
   const [previewRA, setPreviewRA] = useState(null);
   const [filterCat, setFilterCat] = useState('All');
+  const [showWizard, setShowWizard] = useState(false);
 
   const nav = (p, data) => {
     setPage(p);
@@ -103,7 +105,7 @@ function AppShell() {
             onPreview={(r) => nav('preview', { preview: r })}
             onDelete={ra.deleteRA}
             onDuplicate={ra.duplicateRA}
-            onNew={() => nav('edit', { ra: blankRA() })}
+            onNew={() => setShowWizard(true)}
             onFromTemplate={(t) => nav('edit', { ra: fromTemplate(t) })}
           />
         )}
@@ -117,6 +119,13 @@ function AppShell() {
           />
         )}
       </div>
+
+      {showWizard && (
+        <RAWizard
+          onConfirm={(ra) => { setShowWizard(false); nav('edit', { ra }); }}
+          onCancel={() => setShowWizard(false)}
+        />
+      )}
     </div>
   );
 }
