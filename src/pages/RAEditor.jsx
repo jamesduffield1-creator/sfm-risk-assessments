@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { getRiskLevel, WHO_AT_RISK_OPTIONS, HAZARD_BANK, CATEGORY_COLORS } from '../data/riskData';
+import { LIBRARY_CATEGORIES, getAllLibraryEntries, loadCustomLibrary, saveCustomLibrary } from '../data/hazardLibrary';
 
 const css = {
   input:    { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, color: '#0f172a', background: '#fff', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
@@ -31,6 +32,10 @@ function RiskBadge({ likelihood, severity }) {
 export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview, onBack }) {
   const [local, setLocal] = useState({ ...ra, hazards: (ra.hazards || []).map(h => ({ ...h })) });
   const [bankOpen, setBankOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libCat, setLibCat] = useState('All');
+  const [libSearch, setLibSearch] = useState('');
+  const [customEntries, setCustomEntries] = useState(() => loadCustomLibrary());
   const [dirty, setDirty] = useState(false);
 
   const update = (field, value) => { setLocal(l => ({ ...l, [field]: value })); setDirty(true); };
@@ -53,6 +58,28 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
     update('hazards', [...(local.hazards || []), { hazard: text, who: '', existingControls: '', likelihood: 2, severity: 2, additionalControls: '', owner: '', deadline: '' }]);
     setBankOpen(false);
   };
+
+  const addFromLibrary = (entry) => {
+    update('hazards', [...(local.hazards || []), {
+      hazard: entry.hazard, who: entry.who,
+      existingControls: entry.existingControls,
+      likelihood: entry.likelihood, severity: entry.severity,
+      additionalControls: entry.additionalControls || '',
+      owner: '', deadline: '',
+    }]);
+    setLibraryOpen(false);
+  };
+
+  const allLibraryEntries = useMemo(() => [...getAllLibraryEntries(), ...customEntries.filter(c => !getAllLibraryEntries().find(b => b.id === c.id))], [customEntries]);
+
+  const filteredLibrary = useMemo(() => allLibraryEntries.filter(e => {
+    if (libCat !== 'All' && e.category !== libCat) return false;
+    if (libSearch) {
+      const q = libSearch.toLowerCase();
+      return e.hazard.toLowerCase().includes(q) || e.category.toLowerCase().includes(q) || e.who.toLowerCase().includes(q);
+    }
+    return true;
+  }), [allLibraryEntries, libCat, libSearch]);
 
   const moveHazard = (idx, dir) => {
     const arr = [...local.hazards];
@@ -147,8 +174,9 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
                 Hazards & Controls ({(local.hazards || []).length})
               </h3>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setBankOpen(b => !b)} style={css.btn('#f1f5f9', '#475569')}>{bankOpen ? '▲ Hide bank' : '▼ Hazard bank'}</button>
-                <button onClick={addHazard} style={css.btn('#0f172a', '#fff')}>+ Add hazard</button>
+                <button onClick={() => { setLibraryOpen(true); setLibCat('All'); setLibSearch(''); }} style={css.btn('#1e40af', '#fff')}>📚 Hazard library</button>
+                <button onClick={() => setBankOpen(b => !b)} style={css.btn('#f1f5f9', '#475569')}>{bankOpen ? '▲ Hide bank' : '▼ Quick add'}</button>
+                <button onClick={addHazard} style={css.btn('#0f172a', '#fff')}>+ Blank hazard</button>
               </div>
             </div>
 
@@ -224,7 +252,11 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
             })}
 
             {!(local.hazards || []).length && (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8' }}>No hazards yet. Use the hazard bank or add manually.</div>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8' }}>
+                No hazards yet.
+                <br /><br />
+                <button onClick={() => { setLibraryOpen(true); setLibCat('All'); setLibSearch(''); }} style={{ background: '#1e40af', color: '#fff', border: 'none', borderRadius: 7, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>📚 Open hazard library</button>
+              </div>
             )}
           </div>
         </div>
@@ -272,6 +304,86 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
           </div>
         </div>
       </div>
+
+      {/* ── Hazard Library Modal ─────────────────────────────────────────── */}
+      {libraryOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: '#00000088', zIndex: 300, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '32px 24px', overflowY: 'auto' }}>
+          <div style={{ background: '#fff', borderRadius: 14, width: '100%', maxWidth: 820, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+            {/* Modal header */}
+            <div style={{ padding: '20px 24px 14px', borderBottom: '1px solid #e2e8f0', flexShrink: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#0f172a' }}>📚 Hazard Library</h2>
+                  <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>Click any entry to add it as a pre-filled hazard row. All fields remain editable.</p>
+                </div>
+                <button onClick={() => setLibraryOpen(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>✕</button>
+              </div>
+              {/* Search */}
+              <input
+                value={libSearch} onChange={e => setLibSearch(e.target.value)}
+                placeholder="Search hazards…"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 7, border: '1px solid #e2e8f0', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }}
+              />
+              {/* Category tabs */}
+              <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                {LIBRARY_CATEGORIES.map(c => (
+                  <button key={c} onClick={() => setLibCat(c)} style={{
+                    padding: '4px 11px', borderRadius: 5, border: '1px solid',
+                    borderColor: libCat === c ? '#1e40af' : '#e2e8f0',
+                    background: libCat === c ? '#1e40af' : '#fff',
+                    color: libCat === c ? '#fff' : '#475569',
+                    fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  }}>{c}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Entry list */}
+            <div style={{ overflowY: 'auto', padding: '12px 16px', flex: 1 }}>
+              {filteredLibrary.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8', fontSize: 14 }}>No hazards match your search.</div>
+              )}
+              {filteredLibrary.map(entry => {
+                const r = getRiskLevel(entry.likelihood, entry.severity);
+                const isCustom = !entry.id.match(/^[a-z_]+$/);
+                return (
+                  <div key={entry.id} onClick={() => addFromLibrary(entry)}
+                    style={{ border: `1px solid ${r.border}`, borderLeft: `4px solid ${r.color}`, borderRadius: 8, padding: '11px 14px', marginBottom: 8, cursor: 'pointer', background: '#fff', transition: 'box-shadow 0.12s' }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)'}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 4 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', flex: 1 }}>{entry.hazard}</div>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                        {isCustom && <span style={{ fontSize: 10, background: '#f0f9ff', color: '#0891b2', border: '1px solid #bae6fd', borderRadius: 3, padding: '1px 5px', fontWeight: 700 }}>CUSTOM</span>}
+                        <span style={{ background: r.bg, color: r.color, border: `1px solid ${r.border}`, borderRadius: 4, padding: '1px 8px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{r.score} — {r.label}</span>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>
+                      <span style={{ fontWeight: 600 }}>{entry.category}</span> · Who: {entry.who}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.5 }}>
+                      <span style={{ fontWeight: 600, color: '#374151' }}>Controls: </span>{entry.existingControls}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Add custom entry */}
+            {isAdmin && (
+              <div style={{ borderTop: '1px solid #e2e8f0', padding: '12px 20px', flexShrink: 0, background: '#f8fafc', borderRadius: '0 0 14px 14px' }}>
+                <details>
+                  <summary style={{ fontSize: 12, fontWeight: 700, color: '#475569', cursor: 'pointer', userSelect: 'none' }}>+ Save current hazard rows as library entries</summary>
+                  <p style={{ fontSize: 12, color: '#94a3b8', margin: '6px 0' }}>
+                    To add a custom entry: add a hazard row to this assessment first, then come back here — custom entries can be saved from the hazard row using a future update. For now, use "Blank hazard" and fill manually.
+                  </p>
+                </details>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
