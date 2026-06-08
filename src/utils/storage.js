@@ -25,9 +25,11 @@ async function sheetsRead(range) {
 async function sheetsWrite(range, values, operation = 'append') {
   const workerUrl = import.meta.env.VITE_WORKER_URL;
   if (!workerUrl) throw new Error('VITE_WORKER_URL not set — writes unavailable');
+  // Use text/plain to avoid CORS preflight (simple request — no OPTIONS needed).
+  // The Worker parses the body as JSON regardless of content-type.
   const res = await fetch(workerUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({ range, values, operation }),
   });
   if (!res.ok) throw new Error(`Sheets write failed: ${res.status}`);
