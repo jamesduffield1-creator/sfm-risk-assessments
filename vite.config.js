@@ -44,5 +44,7 @@ export default defineConfig({
     'import.meta.env.VITE_SHEETS_API_KEY': JSON.stringify(process.env.VITE_SHEETS_API_KEY || ''),
     'import.meta.env.VITE_SHEET_ID':       JSON.stringify(process.env.VITE_SHEET_ID       || ''),
     'import.meta.env.VITE_WORKER_URL':     JSON.stringify(process.env.VITE_WORKER_URL     || ''),
+    // Note: VITE_CLIENT_EMAIL and VITE_PRIVATE_KEY are NOT used in the app.
+    // They live in Cloudflare Worker environment variables only.
   },
 })

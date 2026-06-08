@@ -37,8 +37,7 @@ jobs:
           VITE_ADMIN_PASSWORD: ${{ secrets.VITE_ADMIN_PASSWORD }}
           VITE_SHEET_ID: ${{ secrets.VITE_SHEET_ID }}
           VITE_SHEETS_API_KEY: ${{ secrets.VITE_SHEETS_API_KEY }}
-          VITE_CLIENT_EMAIL: ${{ secrets.VITE_CLIENT_EMAIL }}
-          VITE_PRIVATE_KEY: ${{ secrets.VITE_PRIVATE_KEY }}
+          VITE_WORKER_URL: ${{ secrets.VITE_WORKER_URL }}
         run: npm run build
 
       - name: Upload Pages artifact
