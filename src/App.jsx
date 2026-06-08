@@ -149,14 +149,15 @@ function AdminLoginButton() {
 }
 
 export function blankRA() {
+  const reviewDate = (() => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d.toISOString().slice(0, 10); })();
   return {
     id: 'ra_' + Date.now(), ref: '', name: '', category: '', location: '',
     legislation: '', reviewMonths: 12, whoAtRisk: [],
     involvesChildren: false, involvesVulnerableAdults: false,
     involvesFood: false, isOutdoor: false, hazards: [],
     status: 'draft', version: 1,
-    assessedBy: '', assessedDate: '', reviewDate: '',
-    pccNoted: '', vicarSignoff: '',
+    assessedBy: '', assessedDate: new Date().toISOString().slice(0, 10), reviewDate,
+    approvedBy: '', pccNoted: '', vicarSignoff: '',
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
   };
 }
@@ -170,7 +171,7 @@ export function fromTemplate(t) {
   return {
     ...t, id: 'ra_' + Date.now(), status: 'draft', version: 1,
     assessedBy: '', assessedDate: new Date().toISOString().slice(0, 10),
-    reviewDate, pccNoted: '', vicarSignoff: '',
+    reviewDate, approvedBy: '', pccNoted: '', vicarSignoff: '',
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
   };
 }

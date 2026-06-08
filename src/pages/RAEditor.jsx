@@ -109,7 +109,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
               <Field label="Date Assessed"><input type="date" value={local.assessedDate || ''} onChange={e => update('assessedDate', e.target.value)} style={css.input} /></Field>
               <Field label="Review Date"><input type="date" value={local.reviewDate || ''} onChange={e => update('reviewDate', e.target.value)} style={css.input} /></Field>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
               <Field label="Status">
                 <select value={local.status || 'draft'} onChange={e => update('status', e.target.value)} style={css.select}>
                   <option value="draft">Draft</option>
@@ -117,6 +117,10 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
                   <option value="review">Needs Review</option>
                   <option value="archived">Archived</option>
                 </select>
+              </Field>
+              <Field label="Approved By" note="Vicar or Operations Manager">
+                <input value={local.approvedBy || ''} onChange={e => update('approvedBy', e.target.value)} style={css.input} list="staff-names-approver" placeholder="Name" />
+                <datalist id="staff-names-approver">{staffNames.map(n => <option key={n} value={n} />)}</datalist>
               </Field>
               <Field label="PCC Noted (Date)"><input type="date" value={local.pccNoted || ''} onChange={e => update('pccNoted', e.target.value)} style={css.input} /></Field>
               <Field label="Vicar Sign-Off"><input value={local.vicarSignoff || ''} onChange={e => update('vicarSignoff', e.target.value)} style={css.input} placeholder="Name + date" /></Field>

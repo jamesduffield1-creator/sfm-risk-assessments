@@ -18,6 +18,7 @@ function generateHTML(ra, settings) {
   const metaRows = [
     ['Assessed by', ra.assessedBy || '[Name]'],
     ['Date assessed', ra.assessedDate ? new Date(ra.assessedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '[Date]'],
+    ['Approved by', ra.approvedBy || '—'],
     ['Review date', ra.reviewDate ? new Date(ra.reviewDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '[Date]'],
     ['Who might be harmed', (ra.whoAtRisk || []).join(', ') || '—'],
     ['PCC noted', ra.pccNoted ? new Date(ra.pccNoted).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'],
@@ -74,8 +75,31 @@ function generateHTML(ra, settings) {
     <th style="width:3%">L</th><th style="width:3%">S</th><th style="width:8%">Risk</th>
     <th style="width:15%">Additional Controls</th><th style="width:10%">Owner</th><th style="width:8%">Deadline</th><th style="width:4%">✓</th>
   </tr></thead><tbody>${hazardRows}</tbody></table>
-  <div style="border-top:1px solid #e2e8f0;margin-top:28px;padding-top:14px;display:flex;justify-content:space-between;font-size:11px;color:#94a3b8">
-    <span>${churchName} · Version ${ra.version || 1} · ${today}</span>
+  <!-- Signature block -->
+  <div style="margin-top:32px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden">
+    <div style="background:#0f172a;color:#fff;padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;font-family:Arial,sans-serif">Sign-Off</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+      <div style="padding:16px;border-right:1px solid #e2e8f0">
+        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;font-family:Arial,sans-serif">Assessor</div>
+        <div style="font-size:12px;color:#374151;margin-bottom:12px">Name: <strong>${ra.assessedBy || '________________________________'}</strong></div>
+        <div style="font-size:12px;color:#374151;margin-bottom:12px">Date: ${ra.assessedDate ? new Date(ra.assessedDate).toLocaleDateString('en-GB') : '________________________________'}</div>
+        <div style="font-size:12px;color:#374151">Signature: ________________________________</div>
+      </div>
+      <div style="padding:16px">
+        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;font-family:Arial,sans-serif">Approved By (Vicar / Operations Manager)</div>
+        <div style="font-size:12px;color:#374151;margin-bottom:12px">Name: <strong>${ra.approvedBy || '________________________________'}</strong></div>
+        <div style="font-size:12px;color:#374151;margin-bottom:12px">Date: ________________________________</div>
+        <div style="font-size:12px;color:#374151">Signature: ________________________________</div>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:10px 16px;display:flex;gap:32px;font-size:12px">
+      <span><strong>Next review date:</strong> ${ra.reviewDate ? new Date(ra.reviewDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '________________'}</span>
+      <span><strong>PCC noted:</strong> ${ra.pccNoted ? new Date(ra.pccNoted).toLocaleDateString('en-GB') : '________________'}</span>
+      <span><strong>Vicar sign-off:</strong> ${ra.vicarSignoff || '________________'}</span>
+    </div>
+  </div>
+  <div style="border-top:1px solid #e2e8f0;margin-top:20px;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#94a3b8">
+    <span>${churchName} · Version ${ra.version || 1} · Printed ${today}</span>
     <span>Ecclesiastical Risk Advice: 0345 600 7531 · HSE: hse.gov.uk/simple-health-safety/risk/</span>
   </div>
 </div>
@@ -179,6 +203,7 @@ export default function RAPreview({ ra, settings, onBack }) {
                 {[
                   ['Assessed by', ra.assessedBy || '—'],
                   ['Date assessed', ra.assessedDate ? new Date(ra.assessedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'],
+                  ['Approved by', ra.approvedBy || '—'],
                   ['Review date', ra.reviewDate ? new Date(ra.reviewDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'],
                   ['Who might be harmed', (ra.whoAtRisk || []).join(', ') || '—'],
                   ['PCC noted', ra.pccNoted ? new Date(ra.pccNoted).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'],
@@ -233,9 +258,33 @@ export default function RAPreview({ ra, settings, onBack }) {
               </table>
             </div>
 
+            {/* Signature block */}
+            <div style={{ marginTop: 28, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+              <div style={{ background: '#0f172a', color: '#fff', padding: '8px 16px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'Arial, sans-serif' }}>Sign-Off</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+                <div style={{ padding: 16, borderRight: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Assessor</div>
+                  <div style={{ fontSize: 12, color: '#374151', marginBottom: 10 }}>Name: <strong>{ra.assessedBy || '________________________________'}</strong></div>
+                  <div style={{ fontSize: 12, color: '#374151', marginBottom: 10 }}>Date: {ra.assessedDate ? new Date(ra.assessedDate).toLocaleDateString('en-GB') : '________________________________'}</div>
+                  <div style={{ fontSize: 12, color: '#94a3b8' }}>Signature: ________________________________</div>
+                </div>
+                <div style={{ padding: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Approved By (Vicar / Operations Manager)</div>
+                  <div style={{ fontSize: 12, color: '#374151', marginBottom: 10 }}>Name: <strong>{ra.approvedBy || '________________________________'}</strong></div>
+                  <div style={{ fontSize: 12, color: '#374151', marginBottom: 10 }}>Date: ________________________________</div>
+                  <div style={{ fontSize: 12, color: '#94a3b8' }}>Signature: ________________________________</div>
+                </div>
+              </div>
+              <div style={{ background: '#f8fafc', borderTop: '1px solid #e2e8f0', padding: '10px 16px', display: 'flex', gap: 28, fontSize: 12, flexWrap: 'wrap' }}>
+                <span><strong>Next review date:</strong> {ra.reviewDate ? new Date(ra.reviewDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '________________'}</span>
+                <span><strong>PCC noted:</strong> {ra.pccNoted ? new Date(ra.pccNoted).toLocaleDateString('en-GB') : '________________'}</span>
+                <span><strong>Vicar sign-off:</strong> {ra.vicarSignoff || '________________'}</span>
+              </div>
+            </div>
+
             {/* Footer */}
-            <div style={{ borderTop: '1px solid #e2e8f0', marginTop: 24, paddingTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
-              <span>{churchName} · Version {ra.version || 1} · {today}</span>
+            <div style={{ borderTop: '1px solid #e2e8f0', marginTop: 20, paddingTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+              <span>{churchName} · Version {ra.version || 1} · Printed {today}</span>
               <span>Ecclesiastical Risk Advice: 0345 600 7531 · HSE: hse.gov.uk/simple-health-safety/risk/</span>
             </div>
           </div>
