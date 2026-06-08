@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#0f172a"/>
+  <!-- Cross -->
+  <rect x="224" y="80" width="64" height="352" rx="12" fill="#ffffff"/>
+  <rect x="80" y="192" width="352" height="64" rx="12" fill="#ffffff"/>
+  <!-- Small shield outline at bottom right for "risk" -->
+  <path d="M340 300 L380 314 L380 358 Q380 380 360 390 L340 400 L320 390 Q300 380 300 358 L300 314 Z" fill="none" stroke="#60a5fa" stroke-width="8"/>
+</svg>

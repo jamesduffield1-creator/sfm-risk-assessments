@@ -70,7 +70,7 @@ export default function Dashboard({ stats, assessments, staff, settings, isAdmin
       <ReviewAlert assessments={assessments} onViewList={onViewList} />
 
       {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 28 }}>
+      <div className="stat-grid">
         <StatCard value={stats.total}       label="Total assessments"         color="#0f172a"  onClick={onViewList} />
         <StatCard value={stats.active}      label="Active"                    color="#16a34a"  onClick={onViewList} />
         <StatCard value={stats.draft}       label="Draft"                     color="#64748b"  onClick={onViewList} />
@@ -79,7 +79,7 @@ export default function Dashboard({ stats, assessments, staff, settings, isAdmin
         <StatCard value={stats.highCritical} label="Contain high/critical risks" color={stats.highCritical > 0 ? '#dc2626' : '#16a34a'} onClick={onViewList} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
+      <div className="two-col-grid">
         {/* By category */}
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 20 }}>
           <h3 style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>By Category</h3>
@@ -143,7 +143,7 @@ export default function Dashboard({ stats, assessments, staff, settings, isAdmin
       </div>
 
       {/* Compliance references */}
-      <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+      <div className="four-col-grid">
         {[
           { label: 'Ecclesiastical Insurance', value: '0345 600 7531', sub: 'Risk advice line Mon–Fri 9–5' },
           { label: 'HSE Risk Guidance', value: 'hse.gov.uk', sub: 'simple-health-safety/risk' },

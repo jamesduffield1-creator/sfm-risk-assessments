@@ -86,7 +86,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, alignItems: 'start' }}>
+      <div className="editor-layout">
         {/* Main */}
         <div>
           {/* Assessment details */}
@@ -230,7 +230,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
         </div>
 
         {/* Sidebar */}
-        <div style={{ position: 'sticky', top: 120, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="editor-sidebar">
           {/* Flags */}
           <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 18 }}>
             <h3 style={{ margin: '0 0 14px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>Activity Flags</h3>

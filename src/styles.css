@@ -1,0 +1,96 @@
+/* ─── Responsive layout overrides ─────────────────────────────────────────── */
+/* All components use inline styles; these classes handle mobile breakpoints   */
+
+/* Stat cards: 6-col on desktop → 2-col on mobile */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+/* Two-column panels (by-category / key-contacts) */
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+/* Four-column compliance references */
+.four-col-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Editor: main content + sidebar */
+.editor-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Editor sidebar — sticky on desktop, normal flow on mobile */
+.editor-sidebar {
+  position: sticky;
+  top: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (max-width: 768px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .two-col-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .four-col-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-sidebar {
+    position: static;
+  }
+
+  /* Nav: allow wrapping on small screens */
+  nav > div {
+    flex-wrap: wrap;
+    height: auto !important;
+    padding: 10px 0;
+    gap: 8px;
+  }
+
+  /* Assessment list buttons: wrap on mobile */
+  .ra-row-actions {
+    flex-wrap: wrap;
+  }
+
+  /* Preview toolbar: stack on mobile */
+  .preview-toolbar {
+    flex-wrap: wrap;
+    height: auto !important;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .four-col-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
