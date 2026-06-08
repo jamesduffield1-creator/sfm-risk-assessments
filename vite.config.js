@@ -2,6 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// All VITE_* env vars are handled natively by Vite — no define block needed.
+// Set them as GitHub Secrets and pass them in the deploy workflow env: block.
+// In the app, access them as: import.meta.env.VITE_SHEET_ID etc.
+
 export default defineConfig({
   plugins: [
     react(),
@@ -39,12 +43,4 @@ export default defineConfig({
     }),
   ],
   base: '/sfm-risk-assessments/',
-  define: {
-    'import.meta.env.VITE_ADMIN_PASSWORD': JSON.stringify(process.env.VITE_ADMIN_PASSWORD || ''),
-    'import.meta.env.VITE_SHEETS_API_KEY': JSON.stringify(process.env.VITE_SHEETS_API_KEY || ''),
-    'import.meta.env.VITE_SHEET_ID':       JSON.stringify(process.env.VITE_SHEET_ID       || ''),
-    'import.meta.env.VITE_WORKER_URL':     JSON.stringify(process.env.VITE_WORKER_URL     || ''),
-    // Note: VITE_CLIENT_EMAIL and VITE_PRIVATE_KEY are NOT used in the app.
-    // They live in Cloudflare Worker environment variables only.
-  },
 })
