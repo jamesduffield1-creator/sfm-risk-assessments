@@ -17,17 +17,25 @@ function Badge({ label, color = '#0f172a' }) {
 function isOverdue(d) { return d && new Date(d) < new Date(); }
 function isDueSoon(d) { if (!d) return false; const diff = new Date(d) - new Date(); return diff > 0 && diff < 30*24*60*60*1000; }
 
-export default function RAList({ assessments, filterCat, setFilterCat, isAdmin, saving, onEdit, onPreview, onDelete, onDuplicate, onNew, onFromTemplate }) {
+export default function RAList({ assessments, filterCat, setFilterCat, filterStatus, setFilterStatus, filterFlag, setFilterFlag, isAdmin, saving, onEdit, onPreview, onDelete, onDuplicate, onMarkReviewed, onNew, onFromTemplate }) {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [search, setSearch] = useState('');
+  const [reviewingId, setReviewingId] = useState(null);
+  const [reviewDate, setReviewDate] = useState('');
 
   const categories = ['All', ...['Premises','Regular Activities','Events','Maintenance','Operations'].filter(c => assessments.some(a => a.category === c))];
 
   const filtered = assessments.filter(a => {
     if (filterCat !== 'All' && a.category !== filterCat) return false;
+    if (filterStatus && a.status !== filterStatus) return false;
+    if (filterFlag === 'overdue' && !(a.status === 'active' && isOverdue(a.reviewDate))) return false;
+    if (filterFlag === 'high_critical' && !(a.hazards || []).some(h => ['High','Critical'].includes(getRiskLevel(h.likelihood, h.severity).label))) return false;
     if (search && !`${a.name} ${a.ref} ${a.location}`.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  const needsReviewCount = assessments.filter(a => a.status === 'needs_review').length;
+  const hasActiveFilter = filterStatus || filterFlag;
 
   return (
     <div>
@@ -45,7 +53,36 @@ export default function RAList({ assessments, filterCat, setFilterCat, isAdmin, 
         )}
       </div>
 
-      {/* Filters + search */}
+      {/* Status filters */}
+      {(hasActiveFilter || needsReviewCount > 0) && (
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 2 }}>Filter:</span>
+          {[
+            { label: 'All', status: null, flag: null },
+            { label: 'Active', status: 'active', flag: null },
+            { label: 'Draft', status: 'draft', flag: null },
+            ...(needsReviewCount > 0 ? [{ label: `Needs Review (${needsReviewCount})`, status: 'needs_review', flag: null }] : []),
+            { label: 'Overdue', status: null, flag: 'overdue' },
+            { label: 'High/Critical', status: null, flag: 'high_critical' },
+          ].map(f => {
+            const active = filterStatus === f.status && filterFlag === f.flag;
+            return (
+              <button key={f.label} onClick={() => { setFilterStatus(f.status); setFilterFlag(f.flag); }} style={{
+                padding: '4px 11px', borderRadius: 5, border: '1px solid',
+                borderColor: active ? '#0f172a' : '#e2e8f0',
+                background: active ? '#0f172a' : '#fff',
+                color: active ? '#fff' : '#475569',
+                fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{f.label}</button>
+            );
+          })}
+          {hasActiveFilter && (
+            <button onClick={() => { setFilterStatus(null); setFilterFlag(null); }} style={{ fontSize: 11, color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', fontFamily: 'inherit' }}>✕ Clear</button>
+          )}
+        </div>
+      )}
+
+      {/* Category filters + search */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
         {categories.map(c => (
           <button key={c} onClick={() => setFilterCat(c)} style={{
@@ -85,9 +122,9 @@ export default function RAList({ assessments, filterCat, setFilterCat, isAdmin, 
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', fontFamily: 'Arial, sans-serif', minWidth: 28 }}>{ra.ref}</span>
                   <span style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>{ra.name}</span>
                   <Badge label={ra.category || '—'} color={CATEGORY_COLORS[ra.category] || '#64748b'} />
-                  <Badge label={ra.status || 'draft'} color={
+                  <Badge label={ra.status === 'needs_review' ? 'Needs Review' : ra.status || 'draft'} color={
                     ra.status === 'active' ? '#16a34a' :
-                    ra.status === 'review' ? '#d97706' :
+                    ra.status === 'needs_review' ? '#d97706' :
                     ra.status === 'archived' ? '#94a3b8' : '#64748b'
                   } />
                   {overdueFl && <Badge label="⚠ Review overdue" color="#dc2626" />}
@@ -103,7 +140,23 @@ export default function RAList({ assessments, filterCat, setFilterCat, isAdmin, 
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                {isAdmin && ra.status === 'needs_review' && reviewingId !== ra.id && (
+                  <button onClick={() => {
+                    const d = new Date(); d.setFullYear(d.getFullYear() + 1);
+                    setReviewDate(d.toISOString().slice(0, 10));
+                    setReviewingId(ra.id);
+                  }} style={css.btn('#fef3c7', '#d97706', { border: '1px solid #fcd34d' })}>✓ Mark reviewed</button>
+                )}
+                {isAdmin && reviewingId === ra.id && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 7, padding: '5px 10px' }}>
+                    <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 600 }}>Next review:</span>
+                    <input type="date" value={reviewDate} onChange={e => setReviewDate(e.target.value)}
+                      style={{ fontSize: 12, border: '1px solid #bbf7d0', borderRadius: 5, padding: '3px 7px', fontFamily: 'inherit', background: '#fff' }} />
+                    <button onClick={() => { onMarkReviewed(ra.id, reviewDate); setReviewingId(null); }} style={css.btn('#16a34a', '#fff')}>Confirm</button>
+                    <button onClick={() => setReviewingId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 16, padding: '0 2px' }}>✕</button>
+                  </div>
+                )}
                 <button onClick={() => onPreview(ra)} style={css.btn('#f1f5f9', '#475569')}>Preview</button>
                 {isAdmin && (
                   <>

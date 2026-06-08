@@ -46,13 +46,14 @@ function generateHTML(ra, settings) {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <title>${ra.ref} — ${ra.name} — Risk Assessment</title>
 <style>
-  @media print { body{margin:0} .no-print{display:none!important} tr{page-break-inside:avoid} }
+  @page { size: A3 landscape; margin: 12mm; }
+  @media print { body{margin:0} .no-print{display:none!important} tr{page-break-inside:avoid} thead{display:table-header-group} }
   body{font-family:Georgia,serif;color:#0f172a;margin:0;padding:0;background:#fff}
-  .page{max-width:1100px;margin:0 auto;padding:40px 40px 60px}
-  h1{margin:0 0 6px;font-size:26px;font-weight:700}
+  .page{max-width:1200px;margin:0 auto;padding:32px 32px 50px}
+  h1{margin:0 0 6px;font-size:24px;font-weight:700}
   table{width:100%;border-collapse:collapse}
   th{background:#0f172a;color:#fff;padding:8px;text-align:left;font-size:11px;font-weight:600}
-  .print-btn{position:fixed;bottom:20px;right:20px;background:#0f172a;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+  .print-btn{position:fixed;bottom:20px;right:20px;background:#0f172a;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:Georgia,serif}
 </style></head><body>
 <div class="page">
   <div style="border-bottom:3px solid #0f172a;padding-bottom:18px;margin-bottom:24px">

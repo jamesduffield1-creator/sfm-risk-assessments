@@ -16,6 +16,8 @@ function AppShell() {
   const [activeRA, setActiveRA] = useState(null);
   const [previewRA, setPreviewRA] = useState(null);
   const [filterCat, setFilterCat] = useState('All');
+  const [filterStatus, setFilterStatus] = useState(null); // null | 'active' | 'draft' | 'needs_review'
+  const [filterFlag, setFilterFlag] = useState(null);    // null | 'overdue' | 'high_critical'
   const [showWizard, setShowWizard] = useState(false);
 
   const nav = (p, data) => {
@@ -92,6 +94,7 @@ function AppShell() {
             settings={ra.settings}
             isAdmin={isAdmin}
             onViewList={() => setPage('list')}
+            onViewListFiltered={(status, flag) => { setFilterStatus(status); setFilterFlag(flag); setPage('list'); }}
             onEditRA={(r) => nav('edit', { ra: r })}
             onPreviewRA={(r) => nav('preview', { preview: r })}
           />
@@ -101,12 +104,20 @@ function AppShell() {
             assessments={ra.assessments}
             filterCat={filterCat}
             setFilterCat={setFilterCat}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+            filterFlag={filterFlag}
+            setFilterFlag={setFilterFlag}
             isAdmin={isAdmin}
             saving={ra.saving}
             onEdit={(r) => nav('edit', { ra: r })}
             onPreview={(r) => nav('preview', { preview: r })}
             onDelete={ra.deleteRA}
             onDuplicate={ra.duplicateRA}
+            onMarkReviewed={(id, newDate) => {
+              const updated = ra.assessments.find(a => a.id === id);
+              if (updated) ra.upsertRA({ ...updated, status: 'active', reviewDate: newDate, version: (updated.version || 1) + 1 });
+            }}
             onNew={() => setShowWizard(true)}
             onFromTemplate={(t) => nav('edit', { ra: fromTemplate(t) })}
           />

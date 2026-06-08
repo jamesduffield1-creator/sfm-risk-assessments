@@ -44,7 +44,7 @@ function ReviewAlert({ assessments, onViewList }) {
   );
 }
 
-export default function Dashboard({ stats, assessments, staff, settings, isAdmin, onViewList, onEditRA, onPreviewRA }) {
+export default function Dashboard({ stats, assessments, staff, settings, isAdmin, onViewList, onViewListFiltered, onEditRA, onPreviewRA }) {
   const staffMap = Object.fromEntries((staff || []).map(s => [s.key, s]));
 
   const keyRoles = [
@@ -71,12 +71,12 @@ export default function Dashboard({ stats, assessments, staff, settings, isAdmin
 
       {/* Stats row */}
       <div className="stat-grid">
-        <StatCard value={stats.total}       label="Total assessments"         color="#0f172a"  onClick={onViewList} />
-        <StatCard value={stats.active}      label="Active"                    color="#16a34a"  onClick={onViewList} />
-        <StatCard value={stats.draft}       label="Draft"                     color="#64748b"  onClick={onViewList} />
-        <StatCard value={stats.overdue}     label="Overdue review"            color={stats.overdue  > 0 ? '#dc2626' : '#16a34a'} onClick={onViewList} />
-        <StatCard value={stats.dueSoon}     label="Due within 30 days"        color={stats.dueSoon  > 0 ? '#d97706' : '#16a34a'} onClick={onViewList} />
-        <StatCard value={stats.highCritical} label="Contain high/critical risks" color={stats.highCritical > 0 ? '#dc2626' : '#16a34a'} onClick={onViewList} />
+        <StatCard value={stats.total}        label="Total assessments"            color="#0f172a"  onClick={() => onViewListFiltered(null, null)} />
+        <StatCard value={stats.active}       label="Active"                       color="#16a34a"  onClick={() => onViewListFiltered('active', null)} />
+        <StatCard value={stats.draft}        label="Draft"                        color="#64748b"  onClick={() => onViewListFiltered('draft', null)} />
+        <StatCard value={stats.needsReview}  label="Needs review"                 color={stats.needsReview  > 0 ? '#d97706' : '#16a34a'} onClick={() => onViewListFiltered('needs_review', null)} />
+        <StatCard value={stats.overdue}      label="Overdue review"               color={stats.overdue  > 0 ? '#dc2626' : '#16a34a'} onClick={() => onViewListFiltered('active', 'overdue')} />
+        <StatCard value={stats.highCritical} label="Contain high/critical risks"  color={stats.highCritical > 0 ? '#dc2626' : '#16a34a'} onClick={() => onViewListFiltered(null, 'high_critical')} />
       </div>
 
       <div className="two-col-grid">

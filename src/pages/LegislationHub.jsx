@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const LEG_CHECKED_KEY = 'sfm_legislation_checked';
 
 // ─── Legislation data ──────────────────────────────────────────────────────────
 const LEGISLATION = [
@@ -313,7 +315,15 @@ export default function LegislationHub({ isAdmin }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState(null);
-  const [checkedDates, setCheckedDates] = useState({});
+  const [checkedDates, setCheckedDates] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(LEG_CHECKED_KEY)) || {}; } catch { return {}; }
+  });
+
+  const markChecked = (id) => {
+    const updated = { ...checkedDates, [id]: new Date().toISOString().slice(0, 10) };
+    setCheckedDates(updated);
+    try { localStorage.setItem(LEG_CHECKED_KEY, JSON.stringify(updated)); } catch (_) {}
+  };
 
   const filtered = LEGISLATION.filter(l => {
     if (activeCategory !== 'All' && l.category !== activeCategory) return false;
@@ -418,7 +428,7 @@ export default function LegislationHub({ isAdmin }) {
                     {isAdmin && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 12, color: '#64748b' }}>Mark as checked today:</span>
-                        <button onClick={() => setCheckedDates(d => ({ ...d, [l.id]: new Date().toISOString().slice(0, 10) }))}
+                        <button onClick={() => markChecked(l.id)}
                           style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', color: '#475569' }}>
                           ✓ Checked {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </button>
