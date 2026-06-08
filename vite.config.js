@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'SFM Risk Assessment Manager',
-        short_name: 'SFM Risks',
+        name: 'STF Risk Assessment Manager',
+        short_name: 'STF Risks',
         description: 'Risk Assessment Designer and Record Keeper — St Francis Mackworth',
         theme_color: '#0f172a',
         background_color: '#f8fafc',

@@ -112,7 +112,7 @@ export default function RAPreview({ ra, settings, onBack }) {
   const [driveLink, setDriveLink] = useState('');
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const churchName = settings?.church_name || CHURCH;
-  const filename = `${ra.ref || 'RA'}-${(ra.name || 'Risk-Assessment').replace(/[^a-zA-Z0-9]+/g, '-')}-SFM`;
+  const filename = `${ra.ref || 'RA'}-${(ra.name || 'Risk-Assessment').replace(/[^a-zA-Z0-9]+/g, '-')}-STF`;
 
   const openPDF = () => {
     const html = generateHTML(ra, settings);

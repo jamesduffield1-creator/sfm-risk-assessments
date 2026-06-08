@@ -7,6 +7,7 @@ import RAEditor from './pages/RAEditor';
 import RAPreview from './pages/RAPreview';
 import StaffSettings from './pages/StaffSettings';
 import RAWizard from './pages/RAWizard';
+import LegislationHub from './pages/LegislationHub';
 
 function AppShell() {
   const { isAdmin, logout } = useAuth();
@@ -56,8 +57,9 @@ function AppShell() {
           </div>
           <div style={{ display: 'flex', gap: 2 }}>
             {[
-              { key: 'dashboard', label: 'Dashboard' },
-              { key: 'list',      label: 'Assessments' },
+              { key: 'dashboard',   label: 'Dashboard' },
+              { key: 'list',        label: 'Assessments' },
+              { key: 'legislation', label: 'Legislation' },
               ...(isAdmin ? [{ key: 'settings', label: 'Staff & Settings' }] : []),
             ].map(({ key, label }) => (
               <button key={key} onClick={() => setPage(key)} style={{
@@ -108,6 +110,9 @@ function AppShell() {
             onNew={() => setShowWizard(true)}
             onFromTemplate={(t) => nav('edit', { ra: fromTemplate(t) })}
           />
+        )}
+        {page === 'legislation' && (
+          <LegislationHub isAdmin={isAdmin} />
         )}
         {page === 'settings' && isAdmin && (
           <StaffSettings
