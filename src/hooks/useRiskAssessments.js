@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   loadAll, saveAssessment, saveStaff, saveSettings,
-  patchLocalAssessments, DEFAULT_STAFF, DEFAULT_SETTINGS,
+  patchLocalAssessments, syncToSheets, DEFAULT_STAFF, DEFAULT_SETTINGS,
 } from '../utils/storage';
 import { getRiskLevel } from '../data/riskData';
 import { ALL_TEMPLATES } from '../data/templates';
@@ -19,7 +19,7 @@ export function useRiskAssessments() {
       setStaff(data.staff || DEFAULT_STAFF);
       setSettings(data.settings || DEFAULT_SETTINGS);
 
-      if (data.assessments) {
+      if (data.assessments && data.assessments.length > 0) {
         // ── Auto-status: Active → Needs Review when review date has passed ──
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -121,6 +121,15 @@ export function useRiskAssessments() {
     try { await saveSettings(newSettings); } catch (e) { setError(e.message); }
   }, []);
 
+  // One-time migration: push all local assessments up to Google Sheets
+  const syncAllToSheets = useCallback(async () => {
+    setSaving(true);
+    try {
+      await syncToSheets(assessments);
+    } catch (e) { setError(e.message); throw e; }
+    setSaving(false);
+  }, [assessments]);
+
   // Import a previously exported backup (replaces all assessments in localStorage)
   const importAssessments = useCallback(async (imported) => {
     setSaving(true);
@@ -148,7 +157,7 @@ export function useRiskAssessments() {
   return {
     assessments, staff, settings, loading, saving, error,
     upsertRA, deleteRA, duplicateRA, updateStaff, updateSettings,
-    importAssessments,
+    importAssessments, syncAllToSheets,
     stats,
   };
 }

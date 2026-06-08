@@ -122,6 +122,8 @@ function AppShell() {
             onSaveStaff={ra.updateStaff}
             onSaveSettings={ra.updateSettings}
             onImport={ra.importAssessments}
+            onSyncToSheets={ra.syncAllToSheets}
+            sheetsEnabled={!!(import.meta.env.VITE_SHEET_ID && import.meta.env.VITE_SHEETS_API_KEY)}
             saving={ra.saving}
           />
         )}

@@ -11,11 +11,6 @@ const SHEET_ID       = import.meta.env.VITE_SHEET_ID        || '';
 const API_KEY        = import.meta.env.VITE_SHEETS_API_KEY  || '';
 const SHEETS_ENABLED = !!(SHEET_ID && API_KEY);
 
-// Temporary debug — remove after confirming Sheets connection works
-console.log('[STF] SHEET_ID:', SHEET_ID ? `set (${SHEET_ID.length} chars)` : 'EMPTY');
-console.log('[STF] API_KEY:', API_KEY ? `set (${API_KEY.length} chars)` : 'EMPTY');
-console.log('[STF] SHEETS_ENABLED:', SHEETS_ENABLED);
-
 // ── Low-level Sheets read ─────────────────────────────────────────────────────
 async function sheetsRead(range) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?key=${API_KEY}`;
@@ -212,6 +207,35 @@ export async function saveSettings(settings) {
 // Does NOT write to Sheets — callers handle that via saveAssessment if needed.
 export function patchLocalAssessments(assessments) {
   saveToLocal({ assessments });
+}
+
+// One-time migration: write all assessments and their hazards to Sheets.
+// Only call when the sheet is empty and localStorage has existing data.
+export async function syncToSheets(assessments) {
+  if (!SHEETS_ENABLED) throw new Error('Sheets not configured — check GitHub Secrets.');
+
+  const raRows = assessments.map(raToRow);
+  const hazardRows = assessments.flatMap((ra, raIdx) =>
+    (ra.hazards || []).map((h, i) => hazardToRow({
+      ...h,
+      id:           `${ra.id}_h${i}`,
+      assessmentId: ra.id,
+      sortOrder:    i,
+    }))
+  );
+
+  // Clear existing data rows then write all at once
+  await sheetsWrite('assessments!A2:V', [], 'clear');
+  if (raRows.length > 0) {
+    await sheetsWrite('assessments!A2:V', raRows, 'update');
+  }
+
+  await sheetsWrite('hazards!A2:K', [], 'clear');
+  if (hazardRows.length > 0) {
+    await sheetsWrite('hazards!A2:K', hazardRows, 'update');
+  }
+
+  await appendAuditLog(`Migrated ${assessments.length} assessments from localStorage to Sheets`);
 }
 
 async function appendAuditLog(message) {

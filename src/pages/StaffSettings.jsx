@@ -17,13 +17,15 @@ function Field({ label, children }) {
 
 export default function StaffSettings({
   staff, settings, assessments,
-  onSaveStaff, onSaveSettings, onImport, saving,
+  onSaveStaff, onSaveSettings, onImport, onSyncToSheets, saving, sheetsEnabled,
 }) {
   const [localStaff, setLocalStaff]       = useState(staff);
   const [localSettings, setLocalSettings] = useState(settings);
   const [tab, setTab]     = useState('staff');
   const [saved, setSaved] = useState(false);
   const [importStatus, setImportStatus] = useState(null); // null | 'success' | 'error'
+  const [syncStatus, setSyncStatus]     = useState(null); // null | 'syncing' | 'success' | 'error'
+  const [syncMsg, setSyncMsg]           = useState('');
   const [importMsg, setImportMsg]       = useState('');
   const fileInputRef = useRef(null);
 
@@ -277,15 +279,55 @@ export default function StaffSettings({
             </div>
           </div>
 
+          {/* Sync to Sheets */}
+          {sheetsEnabled && (
+            <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
+              <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+                ☁️ Sync to Google Sheets
+              </h3>
+              <p style={{ margin: '0 0 16px', fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
+                Google Sheets is connected. Push all {assessments?.length || 0} local assessments
+                up to the sheet now. Only needed once — after this, saves happen automatically.
+              </p>
+              {syncStatus === 'success' && (
+                <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#16a34a', fontWeight: 600 }}>
+                  {syncMsg}
+                </div>
+              )}
+              {syncStatus === 'error' && (
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#dc2626' }}>
+                  {syncMsg}
+                </div>
+              )}
+              <button
+                disabled={syncStatus === 'syncing'}
+                onClick={async () => {
+                  setSyncStatus('syncing');
+                  setSyncMsg('');
+                  try {
+                    await onSyncToSheets();
+                    setSyncStatus('success');
+                    setSyncMsg(`✓ ${assessments?.length || 0} assessments synced to Google Sheets.`);
+                  } catch (e) {
+                    setSyncStatus('error');
+                    setSyncMsg(`Sync failed: ${e.message}`);
+                  }
+                }}
+                style={{ ...css.btn(syncStatus === 'syncing' ? '#94a3b8' : '#0f172a', '#fff'), cursor: syncStatus === 'syncing' ? 'not-allowed' : 'pointer' }}
+              >
+                {syncStatus === 'syncing' ? 'Syncing…' : 'Push to Google Sheets'}
+              </button>
+            </div>
+          )}
+
           {/* Info */}
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 18 }}>
             <h4 style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#475569' }}>About data storage</h4>
             <p style={{ margin: 0, fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
-              Assessments are currently stored in your browser's local storage. This means
-              data is tied to this browser on this device. To share across devices or provide
-              a shared register for all staff, connect Google Sheets via the
-              VITE_SHEET_ID and VITE_SHEETS_API_KEY GitHub Secrets (see SETUP.md).
-              Regular JSON exports are the recommended backup strategy until Sheets is connected.
+              {sheetsEnabled
+                ? 'Google Sheets is connected. All saves write to both Sheets and local storage. Use the Push button above once to migrate your existing assessments.'
+                : 'Assessments are stored in your browser\'s local storage. To share across devices, connect Google Sheets via GitHub Secrets (see SETUP.md). Regular JSON exports are recommended until Sheets is connected.'
+              }
             </p>
           </div>
 
