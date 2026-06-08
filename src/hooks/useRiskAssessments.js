@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { loadAll, saveAssessment, saveStaff, saveSettings, DEFAULT_STAFF, DEFAULT_SETTINGS } from '../utils/storage';
+import {
+  loadAll, saveAssessment, saveStaff, saveSettings,
+  patchLocalAssessments, DEFAULT_STAFF, DEFAULT_SETTINGS,
+} from '../utils/storage';
 import { getRiskLevel } from '../data/riskData';
-
-// All existing preset templates imported inline (same data as before)
 import { ALL_TEMPLATES } from '../data/templates';
 
 export function useRiskAssessments() {
@@ -17,28 +18,47 @@ export function useRiskAssessments() {
     loadAll().then(data => {
       setStaff(data.staff || DEFAULT_STAFF);
       setSettings(data.settings || DEFAULT_SETTINGS);
+
       if (data.assessments) {
-        setAssessments(data.assessments);
+        // ── Auto-status: Active → Needs Review when review date has passed ──
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let changed = false;
+        const withStatus = data.assessments.map(a => {
+          if (
+            a.status === 'active' &&
+            a.reviewDate &&
+            new Date(a.reviewDate) < today
+          ) {
+            changed = true;
+            return { ...a, status: 'needs_review', updatedAt: new Date().toISOString() };
+          }
+          return a;
+        });
+        setAssessments(withStatus);
+        if (changed) {
+          // Persist the status updates silently (localStorage only — no Sheets round-trip)
+          patchLocalAssessments(withStatus);
+        }
       } else {
-        // First run — seed with all templates
+        // First run — seed with all templates as active assessments
         const seeded = ALL_TEMPLATES.map(t => ({
           ...t,
-          status: 'active',
-          version: 1,
-          assessedBy: t.assessedBy || '',
-          assessedDate: t.assessedDate || '',
-          reviewDate: t.reviewDate || '',
-          pccNoted: '',
-          vicarSignoff: '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          status:      'active',
+          version:     1,
+          assessedBy:  t.assessedBy  || '',
+          assessedDate:t.assessedDate|| '',
+          reviewDate:  t.reviewDate  || '',
+          approvedBy:  '',
+          pccNoted:    '',
+          vicarSignoff:'',
+          createdAt:   new Date().toISOString(),
+          updatedAt:   new Date().toISOString(),
         }));
         setAssessments(seeded);
-        // Persist seed
-        const ls = {};
-        ls.assessments = seeded;
-        try { localStorage.setItem('sfm_ra_v2', JSON.stringify(ls)); } catch (_) {}
+        patchLocalAssessments(seeded);
       }
+
       setLoading(false);
     }).catch(err => {
       setError(err.message);
@@ -57,8 +77,8 @@ export function useRiskAssessments() {
 
   const upsertRA = useCallback(async (ra) => {
     const updated = { ...ra, updatedAt: new Date().toISOString() };
-    const exists = assessments.find(a => a.id === updated.id);
-    const next = exists
+    const exists  = assessments.find(a => a.id === updated.id);
+    const next    = exists
       ? assessments.map(a => a.id === updated.id ? updated : a)
       : [...assessments, updated];
     await persistRA(updated, next);
@@ -78,14 +98,14 @@ export function useRiskAssessments() {
   const duplicateRA = useCallback(async (ra) => {
     const copy = {
       ...ra,
-      id: 'ra_' + Date.now(),
-      ref: ra.ref + '-copy',
-      name: ra.name + ' (copy)',
-      status: 'draft',
-      assessedBy: '', assessedDate: '', reviewDate: '',
-      pccNoted: '', vicarSignoff: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      id:           'ra_' + Date.now(),
+      ref:          ra.ref + '-copy',
+      name:         ra.name + ' (copy)',
+      status:       'draft',
+      assessedBy:   '', assessedDate: '', reviewDate: '',
+      approvedBy:   '', pccNoted: '', vicarSignoff: '',
+      createdAt:    new Date().toISOString(),
+      updatedAt:    new Date().toISOString(),
     };
     await upsertRA(copy);
     return copy;
@@ -101,15 +121,26 @@ export function useRiskAssessments() {
     try { await saveSettings(newSettings); } catch (e) { setError(e.message); }
   }, []);
 
-  // Dashboard stats
+  // Import a previously exported backup (replaces all assessments in localStorage)
+  const importAssessments = useCallback(async (imported) => {
+    setSaving(true);
+    setAssessments(imported);
+    patchLocalAssessments(imported);
+    setSaving(false);
+  }, []);
+
+  // ── Dashboard stats ──────────────────────────────────────────────────────────
   const stats = {
-    total: assessments.length,
-    active: assessments.filter(a => a.status === 'active').length,
-    draft: assessments.filter(a => a.status === 'draft').length,
-    overdue: assessments.filter(a => a.status === 'active' && isOverdue(a.reviewDate)).length,
-    dueSoon: assessments.filter(a => a.status === 'active' && isDueSoon(a.reviewDate)).length,
+    total:        assessments.length,
+    active:       assessments.filter(a => a.status === 'active').length,
+    draft:        assessments.filter(a => a.status === 'draft').length,
+    needsReview:  assessments.filter(a => a.status === 'needs_review').length,
+    overdue:      assessments.filter(a => a.status === 'active' && isOverdue(a.reviewDate)).length,
+    dueSoon:      assessments.filter(a => a.status === 'active' && isDueSoon(a.reviewDate)).length,
     highCritical: assessments.filter(a =>
-      (a.hazards || []).some(h => ['High','Critical'].includes(getRiskLevel(h.likelihood, h.severity).label))
+      (a.hazards || []).some(h =>
+        ['High','Critical'].includes(getRiskLevel(h.likelihood, h.severity).label)
+      )
     ).length,
     byCategory: groupBy(assessments, 'category'),
   };
@@ -117,6 +148,7 @@ export function useRiskAssessments() {
   return {
     assessments, staff, settings, loading, saving, error,
     upsertRA, deleteRA, duplicateRA, updateStaff, updateSettings,
+    importAssessments,
     stats,
   };
 }

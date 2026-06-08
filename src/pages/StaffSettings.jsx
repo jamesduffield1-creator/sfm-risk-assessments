@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const css = {
   input: { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, color: '#0f172a', background: '#fff', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
@@ -15,11 +15,17 @@ function Field({ label, children }) {
   );
 }
 
-export default function StaffSettings({ staff, settings, onSaveStaff, onSaveSettings, saving }) {
+export default function StaffSettings({
+  staff, settings, assessments,
+  onSaveStaff, onSaveSettings, onImport, saving,
+}) {
   const [localStaff, setLocalStaff]       = useState(staff);
   const [localSettings, setLocalSettings] = useState(settings);
-  const [tab, setTab]   = useState('staff');
+  const [tab, setTab]     = useState('staff');
   const [saved, setSaved] = useState(false);
+  const [importStatus, setImportStatus] = useState(null); // null | 'success' | 'error'
+  const [importMsg, setImportMsg]       = useState('');
+  const fileInputRef = useRef(null);
 
   const updateStaffMember = (idx, field, value) => {
     const updated = [...localStaff];
@@ -40,34 +46,98 @@ export default function StaffSettings({ staff, settings, onSaveStaff, onSaveSett
   };
 
   const handleSave = async () => {
-    if (tab === 'staff') await onSaveStaff(localStaff);
-    else await onSaveSettings(localSettings);
+    if (tab === 'staff')    await onSaveStaff(localStaff);
+    if (tab === 'settings') await onSaveSettings(localSettings);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
+
+  // ── Export ──────────────────────────────────────────────────────────────────
+  const handleExport = () => {
+    const payload = {
+      exportedAt:  new Date().toISOString(),
+      exportedBy:  'STF Risk Assessment Manager',
+      version:     2,
+      assessments: assessments || [],
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href     = url;
+    a.download = `STF-RiskAssessments-Backup-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Import ──────────────────────────────────────────────────────────────────
+  const handleImportFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        // Accept either { assessments: [...] } wrapper or a bare array
+        const list = Array.isArray(parsed)
+          ? parsed
+          : Array.isArray(parsed.assessments)
+            ? parsed.assessments
+            : null;
+
+        if (!list) throw new Error('No assessments array found in file.');
+
+        // Basic validation — each item must have an id and name
+        const valid = list.filter(a => a && a.id && a.name);
+        if (valid.length === 0) throw new Error('File contains no valid assessments.');
+
+        onImport(valid);
+        setImportStatus('success');
+        setImportMsg(`✓ ${valid.length} assessment${valid.length !== 1 ? 's' : ''} restored successfully.`);
+      } catch (err) {
+        setImportStatus('error');
+        setImportMsg(`Error reading file: ${err.message}`);
+      }
+      // Reset the input so the same file can be re-selected if needed
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  const showSaveButton = tab === 'staff' || tab === 'settings';
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Staff & Settings</h1>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {saved && <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>✓ Saved</span>}
-          {saving && <span style={{ fontSize: 13, color: '#64748b' }}>Saving…</span>}
-          <button onClick={handleSave} style={css.btn('#0f172a', '#fff')}>Save changes</button>
+          {saved   && <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>✓ Saved</span>}
+          {saving  && <span style={{ fontSize: 13, color: '#64748b' }}>Saving…</span>}
+          {showSaveButton && (
+            <button onClick={handleSave} style={css.btn('#0f172a', '#fff')}>Save changes</button>
+          )}
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '2px solid #e2e8f0', paddingBottom: 0 }}>
-        {[['staff', 'Staff Directory'], ['settings', 'Church Settings'], ['compliance', 'Compliance Info']].map(([key, label]) => (
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '2px solid #e2e8f0' }}>
+        {[
+          ['staff',      'Staff Directory'],
+          ['settings',   'Church Settings'],
+          ['compliance', 'Compliance Info'],
+          ['data',       'Data & Backup'],
+        ].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)} style={{
-            background: 'transparent', border: 'none', borderBottom: tab === key ? '2px solid #0f172a' : '2px solid transparent',
-            color: tab === key ? '#0f172a' : '#64748b', padding: '8px 16px', fontSize: 13, fontWeight: 600,
+            background: 'transparent', border: 'none',
+            borderBottom: tab === key ? '2px solid #0f172a' : '2px solid transparent',
+            color: tab === key ? '#0f172a' : '#64748b',
+            padding: '8px 16px', fontSize: 13, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit', marginBottom: -2,
           }}>{label}</button>
         ))}
       </div>
 
+      {/* ── Staff ── */}
       {tab === 'staff' && (
         <div>
           <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 20px' }}>
@@ -100,20 +170,21 @@ export default function StaffSettings({ staff, settings, onSaveStaff, onSaveSett
         </div>
       )}
 
+      {/* ── Church Settings ── */}
       {tab === 'settings' && (
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24, maxWidth: 640 }}>
           <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 20px' }}>
             These settings appear on all exported risk assessment documents.
           </p>
           {[
-            ['church_name',    'Church Name'],
-            ['address',        'Address'],
-            ['diocese',        'Diocese'],
-            ['network',        'Network Affiliation'],
-            ['registered_charity', 'Registered Charity Number'],
-            ['ecclesiastical_policy', 'Ecclesiastical Policy Number'],
-            ['admin_email',    'Admin Email'],
-            ['website',        'Website'],
+            ['church_name',             'Church Name'],
+            ['address',                 'Address'],
+            ['diocese',                 'Diocese'],
+            ['network',                 'Network Affiliation'],
+            ['registered_charity',      'Registered Charity Number'],
+            ['ecclesiastical_policy',   'Ecclesiastical Policy Number'],
+            ['admin_email',             'Admin Email'],
+            ['website',                 'Website'],
           ].map(([key, label]) => (
             <Field key={key} label={label}>
               <input value={localSettings[key] || ''} onChange={e => updateSetting(key, e.target.value)} style={css.input} />
@@ -122,6 +193,7 @@ export default function StaffSettings({ staff, settings, onSaveStaff, onSaveSett
         </div>
       )}
 
+      {/* ── Compliance ── */}
       {tab === 'compliance' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {[
@@ -142,6 +214,81 @@ export default function StaffSettings({ staff, settings, onSaveStaff, onSaveSett
               ))}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── Data & Backup ── */}
+      {tab === 'data' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 680 }}>
+
+          {/* Export */}
+          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+              📥 Export Backup
+            </h3>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
+              Downloads all {assessments?.length || 0} risk assessments as a JSON file. Keep this as a
+              safety copy and store it securely (OneDrive or church server).
+              Best practice: export monthly or after any major changes.
+            </p>
+            <button onClick={handleExport} style={css.btn('#0f172a', '#fff')}>
+              Download backup (.json)
+            </button>
+          </div>
+
+          {/* Import */}
+          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+              📤 Import / Restore
+            </h3>
+            <p style={{ margin: '0 0 4px', fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
+              Upload a previously exported backup file to restore your assessments.
+            </p>
+            <p style={{ margin: '0 0 16px', fontSize: 12, color: '#dc2626', fontWeight: 600 }}>
+              ⚠ This replaces all current assessments in the browser with the imported data.
+              Export a fresh backup first if you want to keep current work.
+            </p>
+
+            {importStatus === 'success' && (
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#16a34a', fontWeight: 600 }}>
+                {importMsg}
+              </div>
+            )}
+            {importStatus === 'error' && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#dc2626' }}>
+                {importMsg}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json,application/json"
+                onChange={handleImportFile}
+                style={{ display: 'none' }}
+              />
+              <button
+                onClick={() => { setImportStatus(null); fileInputRef.current?.click(); }}
+                style={css.btn('#f1f5f9', '#475569')}
+              >
+                Choose backup file…
+              </button>
+            </div>
+          </div>
+
+          {/* Info */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 18 }}>
+            <h4 style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#475569' }}>About data storage</h4>
+            <p style={{ margin: 0, fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+              Assessments are currently stored in your browser's local storage. This means
+              data is tied to this browser on this device. To share across devices or provide
+              a shared register for all staff, connect Google Sheets via the
+              VITE_SHEET_ID and VITE_SHEETS_API_KEY GitHub Secrets (see SETUP.md).
+              Regular JSON exports are the recommended backup strategy until Sheets is connected.
+            </p>
+          </div>
+
         </div>
       )}
     </div>

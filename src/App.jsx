@@ -118,8 +118,10 @@ function AppShell() {
           <StaffSettings
             staff={ra.staff}
             settings={ra.settings}
+            assessments={ra.assessments}
             onSaveStaff={ra.updateStaff}
             onSaveSettings={ra.updateSettings}
+            onImport={ra.importAssessments}
             saving={ra.saving}
           />
         )}

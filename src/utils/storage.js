@@ -1,14 +1,14 @@
 // ─── Google Sheets Storage Layer ─────────────────────────────────────────────
 // Falls back to localStorage if Sheets credentials are not configured.
 // Sheet structure:
-//   Tab "assessments" : one row per RA (all scalar fields)
+//   Tab "assessments" : one row per RA (22 scalar fields, cols A–V)
 //   Tab "hazards"     : one row per hazard (linked by assessment id)
-//   Tab "staff"       : key/value staff directory
+//   Tab "staff"       : staff directory
 //   Tab "settings"    : key/value app settings
 //   Tab "audit_log"   : append-only change log
 
-const SHEET_ID   = import.meta.env.VITE_SHEET_ID   || '';
-const API_KEY    = import.meta.env.VITE_SHEETS_API_KEY || '';
+const SHEET_ID       = import.meta.env.VITE_SHEET_ID        || '';
+const API_KEY        = import.meta.env.VITE_SHEETS_API_KEY  || '';
 const SHEETS_ENABLED = !!(SHEET_ID && API_KEY);
 
 // ── Low-level Sheets read ─────────────────────────────────────────────────────
@@ -21,25 +21,26 @@ async function sheetsRead(range) {
 }
 
 // Sheets write requires OAuth — we use a Cloudflare Worker proxy (see SETUP.md)
-// The worker accepts { range, values } and signs the request with the service account.
-async function sheetsWrite(range, values) {
+// operation: 'append' (default) | 'update' (PUT to specific range) | 'clear' (wipe range)
+async function sheetsWrite(range, values, operation = 'append') {
   const workerUrl = import.meta.env.VITE_WORKER_URL;
   if (!workerUrl) throw new Error('VITE_WORKER_URL not set — writes unavailable');
   const res = await fetch(workerUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ range, values }),
+    body: JSON.stringify({ range, values, operation }),
   });
   if (!res.ok) throw new Error(`Sheets write failed: ${res.status}`);
   return res.json();
 }
 
 // ── Row <-> Object mapping ────────────────────────────────────────────────────
+// 22 columns A–V. approvedBy sits at col R (between reviewDate and pccNoted).
 const RA_COLS = [
   'id','ref','name','category','location','legislation','reviewMonths',
   'whoAtRisk','involvesChildren','involvesVulnerableAdults','involvesFood',
   'isOutdoor','status','version','assessedBy','assessedDate','reviewDate',
-  'pccNoted','vicarSignoff','createdAt','updatedAt',
+  'approvedBy','pccNoted','vicarSignoff','createdAt','updatedAt',
 ];
 
 const HAZARD_COLS = [
@@ -47,19 +48,18 @@ const HAZARD_COLS = [
   'likelihood','severity','additionalControls','owner','deadline','sortOrder',
 ];
 
-const STAFF_COLS  = ['key','label','name','email','phone'];
-const SETTING_COLS = ['key','value'];
+const STAFF_COLS   = ['key','label','name','email','phone'];
 
 function rowToRA(row) {
   const obj = {};
   RA_COLS.forEach((col, i) => { obj[col] = row[i] ?? ''; });
-  obj.whoAtRisk            = obj.whoAtRisk ? obj.whoAtRisk.split('|') : [];
-  obj.involvesChildren     = obj.involvesChildren === 'true';
+  obj.whoAtRisk                = obj.whoAtRisk ? obj.whoAtRisk.split('|') : [];
+  obj.involvesChildren         = obj.involvesChildren === 'true';
   obj.involvesVulnerableAdults = obj.involvesVulnerableAdults === 'true';
-  obj.involvesFood         = obj.involvesFood === 'true';
-  obj.isOutdoor            = obj.isOutdoor === 'true';
-  obj.reviewMonths         = Number(obj.reviewMonths) || 12;
-  obj.version              = Number(obj.version) || 1;
+  obj.involvesFood             = obj.involvesFood === 'true';
+  obj.isOutdoor                = obj.isOutdoor === 'true';
+  obj.reviewMonths             = Number(obj.reviewMonths) || 12;
+  obj.version                  = Number(obj.version) || 1;
   return obj;
 }
 
@@ -88,12 +88,6 @@ function hazardToRow(h) {
   });
 }
 
-function rowToStaff(row) {
-  const obj = {};
-  STAFF_COLS.forEach((col, i) => { obj[col] = row[i] ?? ''; });
-  return obj;
-}
-
 function staffToRow(s) {
   return STAFF_COLS.map(col => s[col] ?? '');
 }
@@ -104,7 +98,7 @@ export async function loadAll() {
 
   try {
     const [raRows, hazardRows, staffRows, settingRows] = await Promise.all([
-      sheetsRead('assessments!A2:U'),
+      sheetsRead('assessments!A2:V'),   // 22 cols A–V
       sheetsRead('hazards!A2:K'),
       sheetsRead('staff!A2:E'),
       sheetsRead('settings!A2:B'),
@@ -113,14 +107,18 @@ export async function loadAll() {
     const assessments = raRows.map(rowToRA);
     const hazardObjs  = hazardRows.map(rowToHazard);
 
-    // Attach hazards to their assessment
+    // Attach hazards to their parent assessment
     assessments.forEach(ra => {
       ra.hazards = hazardObjs
         .filter(h => h.assessmentId === ra.id)
         .sort((a, b) => a.sortOrder - b.sortOrder);
     });
 
-    const staff    = staffRows.map(rowToStaff);
+    const staff    = staffRows.map(row => {
+      const obj = {};
+      STAFF_COLS.forEach((col, i) => { obj[col] = row[i] ?? ''; });
+      return obj;
+    });
     const settings = Object.fromEntries(settingRows.map(([k, v]) => [k, v]));
 
     return { assessments, staff, settings };
@@ -131,42 +129,45 @@ export async function loadAll() {
 }
 
 export async function saveAssessment(ra, allAssessments) {
-  // Always persist to localStorage as cache
+  // Always persist to localStorage as cache / offline fallback
   saveToLocal({ assessments: allAssessments });
 
   if (!SHEETS_ENABLED) return;
 
   try {
-    // Upsert RA row
+    // ── Upsert the RA row ──────────────────────────────────────────────────
     const existing = await sheetsRead('assessments!A:A');
-    const rowIdx = existing.findIndex(r => r[0] === ra.id);
+    const rowIdx   = existing.findIndex(r => r[0] === ra?.id);
 
     if (rowIdx >= 0) {
-      await sheetsWrite(`assessments!A${rowIdx + 2}:U${rowIdx + 2}`, [raToRow(ra)]);
-    } else {
-      await sheetsWrite('assessments!A:U', [raToRow(ra)]);
+      // Row already exists — overwrite in place
+      await sheetsWrite(`assessments!A${rowIdx + 2}:V${rowIdx + 2}`, [raToRow(ra)], 'update');
+    } else if (ra) {
+      // New assessment — append a row
+      await sheetsWrite('assessments!A:V', [raToRow(ra)], 'append');
     }
 
-    // Replace all hazard rows for this assessment
-    const allHazardRows = await sheetsRead('hazards!A:A');
-    const toDelete = allHazardRows
-      .map((r, i) => ({ id: r[0], idx: i }))
-      .filter(r => r.id.startsWith(ra.id + '_'));
+    // ── Full hazard sync for this assessment ──────────────────────────────
+    // Read all hazard rows, swap out this assessment's hazards, rewrite the tab.
+    const allHazardRows = await sheetsRead('hazards!A2:K');
+    const otherHazards  = allHazardRows.filter(r => r[1] !== ra?.id);
 
-    // Write new hazard rows
-    const newRows = (ra.hazards || []).map((h, i) => ({
+    const newHazardRows = (ra?.hazards || []).map((h, i) => hazardToRow({
       ...h,
-      id: `${ra.id}_${i}`,
+      id:           `${ra.id}_h${i}`,
       assessmentId: ra.id,
-      sortOrder: i,
+      sortOrder:    i,
     }));
 
-    // For simplicity append new rows (a full sync would clear and rewrite)
-    if (newRows.length > 0) {
-      await sheetsWrite('hazards!A:K', newRows.map(hazardToRow));
+    const allRows = [...otherHazards, ...newHazardRows];
+
+    // Clear data rows then write the full merged set
+    await sheetsWrite('hazards!A2:K', [], 'clear');
+    if (allRows.length > 0) {
+      await sheetsWrite('hazards!A2:K', allRows, 'update');
     }
 
-    await appendAuditLog(`Updated assessment: ${ra.ref} — ${ra.name}`);
+    await appendAuditLog(`Updated assessment: ${ra?.ref} — ${ra?.name}`);
   } catch (err) {
     console.error('Sheets save failed:', err);
   }
@@ -179,7 +180,7 @@ export async function saveStaff(staff) {
 
   if (!SHEETS_ENABLED) return;
   try {
-    await sheetsWrite('staff!A2:E', staff.map(staffToRow));
+    await sheetsWrite('staff!A2:E', staff.map(staffToRow), 'update');
     await appendAuditLog('Updated staff directory');
   } catch (err) {
     console.error('Sheets staff save failed:', err);
@@ -194,17 +195,24 @@ export async function saveSettings(settings) {
   if (!SHEETS_ENABLED) return;
   try {
     const rows = Object.entries(settings).map(([k, v]) => [k, v]);
-    await sheetsWrite('settings!A2:B', rows);
+    await sheetsWrite('settings!A2:B', rows, 'update');
     await appendAuditLog('Updated settings');
   } catch (err) {
     console.error('Sheets settings save failed:', err);
   }
 }
 
+// Bulk-persist all assessments to localStorage.
+// Used by auto-status update on load and by the import-from-backup feature.
+// Does NOT write to Sheets — callers handle that via saveAssessment if needed.
+export function patchLocalAssessments(assessments) {
+  saveToLocal({ assessments });
+}
+
 async function appendAuditLog(message) {
   if (!SHEETS_ENABLED) return;
   const row = [new Date().toISOString(), message, navigator.userAgent.slice(0, 60)];
-  try { await sheetsWrite('audit_log!A:C', [row]); } catch (_) {}
+  try { await sheetsWrite('audit_log!A:C', [row], 'append'); } catch (_) {}
 }
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
@@ -229,7 +237,7 @@ function saveToLocal(data) {
 function loadFromLocal() {
   const data = getLocal();
   return {
-    assessments: data.assessments || null, // null = use defaults
+    assessments: data.assessments || null, // null = seed from templates on first run
     staff:       data.staff       || DEFAULT_STAFF,
     settings:    data.settings    || DEFAULT_SETTINGS,
   };
@@ -237,24 +245,24 @@ function loadFromLocal() {
 
 // ── Defaults ──────────────────────────────────────────────────────────────────
 export const DEFAULT_STAFF = [
-  { key: 'vicar',           label: 'Vicar',                    name: 'TBC', email: '', phone: '' },
-  { key: 'ops_manager',     label: 'Operations Manager',       name: 'James Duffield', email: '', phone: '' },
-  { key: 'pso',             label: 'Parish Safeguarding Officer', name: 'Joanne Baillie', email: '', phone: '' },
-  { key: 'cf_pastor',       label: 'Children & Families Pastor', name: 'TBC', email: '', phone: '' },
-  { key: 'youth_pastor',    label: 'Youth Pastor',             name: 'TBC', email: '', phone: '' },
-  { key: 'churchwarden_1',  label: 'Churchwarden',             name: 'TBC', email: '', phone: '' },
-  { key: 'churchwarden_2',  label: 'Churchwarden',             name: 'TBC', email: '', phone: '' },
-  { key: 'first_aider',     label: 'First Aider (Primary)',    name: 'TBC', email: '', phone: '' },
-  { key: 'fire_marshal',    label: 'Fire Marshal',             name: 'TBC', email: '', phone: '' },
+  { key: 'vicar',          label: 'Vicar',                      name: 'TBC',            email: '', phone: '' },
+  { key: 'ops_manager',    label: 'Operations Manager',         name: 'James Duffield', email: '', phone: '' },
+  { key: 'pso',            label: 'Parish Safeguarding Officer',name: 'Joanne Baillie', email: '', phone: '' },
+  { key: 'cf_pastor',      label: 'Children & Families Pastor', name: 'TBC',            email: '', phone: '' },
+  { key: 'youth_pastor',   label: 'Youth Pastor',               name: 'TBC',            email: '', phone: '' },
+  { key: 'churchwarden_1', label: 'Churchwarden',               name: 'TBC',            email: '', phone: '' },
+  { key: 'churchwarden_2', label: 'Churchwarden',               name: 'TBC',            email: '', phone: '' },
+  { key: 'first_aider',    label: 'First Aider (Primary)',      name: 'TBC',            email: '', phone: '' },
+  { key: 'fire_marshal',   label: 'Fire Marshal',               name: 'TBC',            email: '', phone: '' },
 ];
 
 export const DEFAULT_SETTINGS = {
-  church_name:    'St Francis Mackworth',
-  address:        'Mackworth, Derby, DE22 4FN',
-  diocese:        'Diocese of Derby',
-  network:        'HTB Network',
-  registered_charity: '',
+  church_name:           'St Francis Mackworth',
+  address:               'Mackworth, Derby, DE22 4FN',
+  diocese:               'Diocese of Derby',
+  network:               'HTB Network',
+  registered_charity:    '',
   ecclesiastical_policy: '',
-  admin_email:    '',
-  website:        '',
+  admin_email:           '',
+  website:               '',
 };
