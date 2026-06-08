@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SFM-admin-2025';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || '';
 const SESSION_KEY = 'sfm_admin_session';
 
 export function AuthProvider({ children }) {
@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState('');
 
   const login = (password) => {
-    if (password === ADMIN_PASSWORD) {
+    if (ADMIN_PASSWORD && password === ADMIN_PASSWORD) {
       setIsAdmin(true);
       setError('');
       try { sessionStorage.setItem(SESSION_KEY, 'true'); } catch (_) {}

@@ -2,7 +2,7 @@
   "name": "sfm-risk-assessments",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://stfmackworth.github.io/sfm-risk-assessments",
+  "homepage": "https://jamesduffield1-creator.github.io/sfm-risk-assessments",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
