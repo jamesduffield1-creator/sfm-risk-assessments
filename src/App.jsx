@@ -47,17 +47,20 @@ function AppShell() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: 'Georgia, serif' }}>
+    <div style={{ minHeight: '100vh', background: '#F5F2EB', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       {/* Top nav */}
-      <nav style={{ background: '#0f172a', color: '#fff', padding: '0 24px', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', height: 58, gap: 0 }}>
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#64748b', fontFamily: 'Arial, sans-serif' }}>
-              {churchName}
-            </span>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginTop: 1 }}>Risk Assessment Manager</div>
+      <nav style={{ background: '#1A3D2B', color: '#fff', padding: '0 24px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '2px 0 16px rgba(0,0,0,.15)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', height: 60, gap: 0 }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ color: '#C8952E', fontSize: 18, lineHeight: 1 }}>✝</span>
+            <div>
+              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', display: 'block' }}>
+                {churchName}
+              </span>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,.92)', marginTop: 1, fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.01em' }}>Risk Assessment Manager</div>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 2 }}>
+          <div style={{ display: 'flex', gap: 1 }}>
             {[
               { key: 'dashboard',   label: 'Dashboard' },
               { key: 'list',        label: 'Assessments' },
@@ -65,19 +68,22 @@ function AppShell() {
               ...(isAdmin ? [{ key: 'settings', label: 'Staff & Settings' }] : []),
             ].map(({ key, label }) => (
               <button key={key} onClick={() => setPage(key)} style={{
-                background: page === key ? '#1e293b' : 'transparent',
-                color: page === key ? '#fff' : '#94a3b8',
-                border: 'none', borderRadius: 6, padding: '6px 14px',
-                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                background: 'transparent',
+                color: page === key ? '#fff' : 'rgba(255,255,255,.55)',
+                border: 'none',
+                borderBottom: page === key ? '2px solid #C8952E' : '2px solid transparent',
+                padding: '0 15px', height: 60,
+                fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                transition: 'color 0.15s',
               }}>{label}</button>
             ))}
           </div>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10 }}>
-            {ra.saving && <span style={{ fontSize: 12, color: '#64748b' }}>Saving…</span>}
+            {ra.saving && <span style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>Saving…</span>}
             {isAdmin
               ? <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, background: '#1e3a5f', color: '#60a5fa', borderRadius: 4, padding: '3px 8px', fontWeight: 700 }}>ADMIN</span>
-                  <button onClick={logout} style={{ background: 'transparent', border: '1px solid #334155', color: '#94a3b8', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Log out</button>
+                  <span style={{ fontSize: 11, background: 'rgba(200,149,46,.2)', color: '#C8952E', border: '1px solid rgba(200,149,46,.35)', borderRadius: 4, padding: '3px 9px', fontWeight: 700, letterSpacing: '0.05em' }}>ADMIN</span>
+                  <button onClick={logout} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.2)', color: 'rgba(255,255,255,.6)', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Log out</button>
                 </div>
               : <AdminLoginButton />
             }
@@ -156,7 +162,7 @@ function AdminLoginButton() {
   const [pw, setPw] = useState('');
 
   if (!show) return (
-    <button onClick={() => setShow(true)} style={{ background: 'transparent', border: '1px solid #334155', color: '#94a3b8', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+    <button onClick={() => setShow(true)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.2)', color: 'rgba(255,255,255,.6)', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
       Admin login
     </button>
   );
@@ -167,11 +173,11 @@ function AdminLoginButton() {
         type="password" placeholder="Admin password" value={pw}
         onChange={e => { setPw(e.target.value); setError(''); }}
         onKeyDown={e => { if (e.key === 'Enter') { login(pw); setPw(''); } }}
-        style={{ padding: '5px 10px', borderRadius: 6, border: error ? '1px solid #dc2626' : '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: 12, width: 160, fontFamily: 'inherit', outline: 'none' }}
+        style={{ padding: '5px 10px', borderRadius: 6, border: error ? '1px solid #D4A0A6' : '1px solid rgba(255,255,255,.2)', background: 'rgba(0,0,0,.25)', color: '#fff', fontSize: 12, width: 160, fontFamily: 'inherit', outline: 'none' }}
         autoFocus
       />
-      <button onClick={() => { login(pw); setPw(''); }} style={{ background: '#fff', color: '#0f172a', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Enter</button>
-      <button onClick={() => { setShow(false); setError(''); setPw(''); }} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 16 }}>✕</button>
+      <button onClick={() => { login(pw); setPw(''); }} style={{ background: '#C8952E', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Enter</button>
+      <button onClick={() => { setShow(false); setError(''); setPw(''); }} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,.45)', cursor: 'pointer', fontSize: 16 }}>✕</button>
     </div>
   );
 }

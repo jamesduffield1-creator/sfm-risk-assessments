@@ -1,3 +1,40 @@
+/* ─── Design tokens ────────────────────────────────────────────────────────── */
+:root {
+  --ink:          #1C1C1A;
+  --ink2:         #2A2A28;
+  --slate:        #5C5852;
+  --muted:        #8C887E;
+  --faint:        #C8C2B8;
+  --border:       #E4DDD2;
+  --surface:      #F5F2EB;
+  --white:        #FEFEFC;
+  --accent:       #1A3D2B;
+  --accent-mid:   #2D6A4F;
+  --accent-light: #E8F2EC;
+  --gold:         #9A6B1E;
+  --gold-light:   #FDF5E4;
+  --red:          #8B2430;
+  --red-light:    #FAF0F1;
+  --green:        #1A5C38;
+  --green-light:  #EAF4EE;
+  --amber:        #8B5B18;
+  --amber-light:  #FDF3E4;
+  --purple:       #452870;
+  --purple-light: #F2EDF8;
+  --font-serif:   'Playfair Display', Georgia, serif;
+  --font-sans:    'DM Sans', system-ui, sans-serif;
+}
+
+/* ─── Animations ────────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 /* ─── Responsive layout overrides ─────────────────────────────────────────── */
 /* All components use inline styles; these classes handle mobile breakpoints   */
 

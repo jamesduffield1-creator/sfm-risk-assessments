@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 
 const css = {
-  input: { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, color: '#0f172a', background: '#fff', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
-  label: { display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' },
-  btn: (bg, color) => ({ background: bg, color, border: 'none', borderRadius: 6, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }),
+  input: { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #E4DDD2', fontSize: 13, color: '#1C1C1A', background: '#FEFEFC', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
+  label: { display: 'block', fontSize: 10, fontWeight: 600, color: '#8C887E', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.07em' },
+  btn: (bg, color) => ({ background: bg, color, border: bg === '#F5F2EB' || bg === '#FEFEFC' ? '1px solid #E4DDD2' : 'none', borderRadius: 6, padding: '8px 18px', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }),
 };
 
 function Field({ label, children }) {
@@ -111,18 +111,18 @@ export default function StaffSettings({
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Staff & Settings</h1>
+        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, color: '#1C1C1A', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '-0.01em' }}>Staff & Settings</h1>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {saved   && <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>✓ Saved</span>}
-          {saving  && <span style={{ fontSize: 13, color: '#64748b' }}>Saving…</span>}
+          {saved   && <span style={{ fontSize: 13, color: '#1A5C38', fontWeight: 600 }}>✓ Saved</span>}
+          {saving  && <span style={{ fontSize: 13, color: '#8C887E' }}>Saving…</span>}
           {showSaveButton && (
-            <button onClick={handleSave} style={css.btn('#0f172a', '#fff')}>Save changes</button>
+            <button onClick={handleSave} style={css.btn('#1A3D2B', '#FEFEFC')}>Save changes</button>
           )}
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '2px solid #e2e8f0' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid #E4DDD2' }}>
         {[
           ['staff',      'Staff Directory'],
           ['settings',   'Church Settings'],
@@ -131,10 +131,11 @@ export default function StaffSettings({
         ].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)} style={{
             background: 'transparent', border: 'none',
-            borderBottom: tab === key ? '2px solid #0f172a' : '2px solid transparent',
-            color: tab === key ? '#0f172a' : '#64748b',
-            padding: '8px 16px', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', fontFamily: 'inherit', marginBottom: -2,
+            borderBottom: tab === key ? '2px solid #C8952E' : '2px solid transparent',
+            color: tab === key ? '#1C1C1A' : '#8C887E',
+            padding: '8px 16px', fontSize: 13, fontWeight: tab === key ? 600 : 400,
+            cursor: 'pointer', fontFamily: 'inherit', marginBottom: -1,
+            transition: 'color 0.15s',
           }}>{label}</button>
         ))}
       </div>
@@ -142,12 +143,12 @@ export default function StaffSettings({
       {/* ── Staff ── */}
       {tab === 'staff' && (
         <div>
-          <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 20px' }}>
+          <p style={{ fontSize: 13, color: '#8C887E', margin: '0 0 20px' }}>
             These names are auto-populated throughout risk assessments as owners and sign-off fields. Keep them current as staff changes.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {localStaff.map((person, idx) => (
-              <div key={person.key} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '16px 18px' }}>
+              <div key={person.key} style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: '16px 18px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
                   <Field label="Role / Title">
                     <input value={person.label} onChange={e => updateStaffMember(idx, 'label', e.target.value)} style={css.input} />
@@ -162,20 +163,20 @@ export default function StaffSettings({
                     <input value={person.phone} onChange={e => updateStaffMember(idx, 'phone', e.target.value)} style={css.input} placeholder="07xxx xxxxxx" />
                   </Field>
                   <div style={{ paddingBottom: 2 }}>
-                    <button onClick={() => removeStaffMember(idx)} style={{ background: '#fee2e2', border: 'none', borderRadius: 6, color: '#dc2626', cursor: 'pointer', padding: '8px 10px', fontSize: 13, fontFamily: 'inherit' }}>✕</button>
+                    <button onClick={() => removeStaffMember(idx)} style={{ background: '#FAF0F1', border: 'none', borderRadius: 6, color: '#8B2430', cursor: 'pointer', padding: '8px 10px', fontSize: 13, fontFamily: 'inherit' }}>✕</button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <button onClick={addStaffMember} style={{ ...css.btn('#f1f5f9', '#475569'), marginTop: 12 }}>+ Add staff member</button>
+          <button onClick={addStaffMember} style={{ ...css.btn('#F5F2EB', '#5C5852'), marginTop: 12 }}>+ Add staff member</button>
         </div>
       )}
 
       {/* ── Church Settings ── */}
       {tab === 'settings' && (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24, maxWidth: 640 }}>
-          <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 20px' }}>
+        <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 24, maxWidth: 640 }}>
+          <p style={{ fontSize: 13, color: '#8C887E', margin: '0 0 20px' }}>
             These settings appear on all exported risk assessment documents.
           </p>
           {[
@@ -206,11 +207,11 @@ export default function StaffSettings({
             { title: 'Buildings & Faculty', items: ['Quinquennial Inspection current', 'Asbestos register in place', 'Legionella risk assessment current', 'Faculty obtained for notifiable works', 'Ecclesiastical insurance policy reviewed annually', 'Buildings Committee meets at least twice yearly'] },
             { title: 'Finance & Governance', items: ['PCC meets at least 4 times per year', 'Accounts independently examined or audited', 'Gift Aid claims submitted annually', 'Treasurer and Churchwarden signatories reviewed', 'Charity Commission returns filed on time', 'Finance Committee meets at least quarterly'] },
           ].map(({ title, items }) => (
-            <div key={title} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 18 }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{title}</h3>
+            <div key={title} style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 18 }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1A3D2B' }}>{title}</h3>
               {items.map(item => (
-                <div key={item} style={{ display: 'flex', gap: 8, marginBottom: 6, fontSize: 12, color: '#374151' }}>
-                  <span style={{ color: '#94a3b8', flexShrink: 0 }}>☐</span>
+                <div key={item} style={{ display: 'flex', gap: 8, marginBottom: 6, fontSize: 12, color: '#2A2A28' }}>
+                  <span style={{ color: '#C8C2B8', flexShrink: 0 }}>☐</span>
                   {item}
                 </div>
               ))}
@@ -224,40 +225,40 @@ export default function StaffSettings({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 680 }}>
 
           {/* Export */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
-            <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+          <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 24 }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#1A3D2B' }}>
               📥 Export Backup
             </h3>
-            <p style={{ margin: '0 0 16px', fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: '#8C887E', lineHeight: 1.5 }}>
               Downloads all {assessments?.length || 0} risk assessments as a JSON file. Keep this as a
               safety copy and store it securely (OneDrive or church server).
               Best practice: export monthly or after any major changes.
             </p>
-            <button onClick={handleExport} style={css.btn('#0f172a', '#fff')}>
+            <button onClick={handleExport} style={css.btn('#1A3D2B', '#FEFEFC')}>
               Download backup (.json)
             </button>
           </div>
 
           {/* Import */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
-            <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+          <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 24 }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#1A3D2B' }}>
               📤 Import / Restore
             </h3>
-            <p style={{ margin: '0 0 4px', fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
+            <p style={{ margin: '0 0 4px', fontSize: 13, color: '#8C887E', lineHeight: 1.5 }}>
               Upload a previously exported backup file to restore your assessments.
             </p>
-            <p style={{ margin: '0 0 16px', fontSize: 12, color: '#dc2626', fontWeight: 600 }}>
+            <p style={{ margin: '0 0 16px', fontSize: 12, color: '#8B2430', fontWeight: 600 }}>
               ⚠ This replaces all current assessments in the browser with the imported data.
               Export a fresh backup first if you want to keep current work.
             </p>
 
             {importStatus === 'success' && (
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#16a34a', fontWeight: 600 }}>
+              <div style={{ background: '#EAF4EE', border: '1px solid #9BCAAC', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#1A5C38', fontWeight: 600 }}>
                 {importMsg}
               </div>
             )}
             {importStatus === 'error' && (
-              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#dc2626' }}>
+              <div style={{ background: '#FAF0F1', border: '1px solid #D4A0A6', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#8B2430' }}>
                 {importMsg}
               </div>
             )}
@@ -272,7 +273,7 @@ export default function StaffSettings({
               />
               <button
                 onClick={() => { setImportStatus(null); fileInputRef.current?.click(); }}
-                style={css.btn('#f1f5f9', '#475569')}
+                style={css.btn('#F5F2EB', '#5C5852')}
               >
                 Choose backup file…
               </button>
@@ -281,21 +282,21 @@ export default function StaffSettings({
 
           {/* Sync to Sheets */}
           {sheetsEnabled && (
-            <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
-              <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+            <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 24 }}>
+              <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#1A3D2B' }}>
                 ☁️ Sync to Google Sheets
               </h3>
-              <p style={{ margin: '0 0 16px', fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
+              <p style={{ margin: '0 0 16px', fontSize: 13, color: '#8C887E', lineHeight: 1.5 }}>
                 Google Sheets is connected. Push all {assessments?.length || 0} local assessments
                 up to the sheet now. Only needed once — after this, saves happen automatically.
               </p>
               {syncStatus === 'success' && (
-                <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#16a34a', fontWeight: 600 }}>
+                <div style={{ background: '#EAF4EE', border: '1px solid #9BCAAC', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#1A5C38', fontWeight: 600 }}>
                   {syncMsg}
                 </div>
               )}
               {syncStatus === 'error' && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#dc2626' }}>
+                <div style={{ background: '#FAF0F1', border: '1px solid #D4A0A6', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#8B2430' }}>
                   {syncMsg}
                 </div>
               )}
@@ -313,7 +314,7 @@ export default function StaffSettings({
                     setSyncMsg(`Sync failed: ${e.message}`);
                   }
                 }}
-                style={{ ...css.btn(syncStatus === 'syncing' ? '#94a3b8' : '#0f172a', '#fff'), cursor: syncStatus === 'syncing' ? 'not-allowed' : 'pointer' }}
+                style={{ ...css.btn(syncStatus === 'syncing' ? '#C8C2B8' : '#1A3D2B', '#FEFEFC'), cursor: syncStatus === 'syncing' ? 'not-allowed' : 'pointer' }}
               >
                 {syncStatus === 'syncing' ? 'Syncing…' : 'Push to Google Sheets'}
               </button>
@@ -321,9 +322,9 @@ export default function StaffSettings({
           )}
 
           {/* Info */}
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 18 }}>
-            <h4 style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#475569' }}>About data storage</h4>
-            <p style={{ margin: 0, fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+          <div style={{ background: '#F5F2EB', border: '1px solid #E4DDD2', borderRadius: 10, padding: 18 }}>
+            <h4 style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#5C5852' }}>About data storage</h4>
+            <p style={{ margin: 0, fontSize: 12, color: '#8C887E', lineHeight: 1.6 }}>
               {sheetsEnabled
                 ? 'Google Sheets is connected. All saves write to both Sheets and local storage. Use the Push button above once to migrate your existing assessments.'
                 : 'Assessments are stored in your browser\'s local storage. To share across devices, connect Google Sheets via GitHub Secrets (see SETUP.md). Regular JSON exports are recommended until Sheets is connected.'

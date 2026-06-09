@@ -1,9 +1,9 @@
 // ─── Risk Level Helpers ───────────────────────────────────────────────────────
 export const RISK_LEVELS = {
-  Low:      { color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
-  Medium:   { color: '#d97706', bg: '#fef3c7', border: '#fcd34d' },
-  High:     { color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' },
-  Critical: { color: '#7c3aed', bg: '#ede9fe', border: '#c4b5fd' },
+  Low:      { color: '#1A5C38', bg: '#EAF4EE', border: '#9BCAAC' },
+  Medium:   { color: '#8B5B18', bg: '#FDF3E4', border: '#D4AA6A' },
+  High:     { color: '#8B2430', bg: '#FAF0F1', border: '#D4A0A6' },
+  Critical: { color: '#452870', bg: '#F2EDF8', border: '#BDB0D8' },
 };
 
 export function getRiskLevel(likelihood, severity) {
@@ -15,11 +15,11 @@ export function getRiskLevel(likelihood, severity) {
 }
 
 export const CATEGORY_COLORS = {
-  'Premises':           '#0f172a',
-  'Regular Activities': '#1e40af',
-  'Events':             '#7c3aed',
-  'Maintenance':        '#d97706',
-  'Operations':         '#0891b2',
+  'Premises':           '#1A3D2B',
+  'Regular Activities': '#1A3D5C',
+  'Events':             '#452870',
+  'Maintenance':        '#9A6B1E',
+  'Operations':         '#0E6B82',
 };
 
 export const WHO_AT_RISK_OPTIONS = [

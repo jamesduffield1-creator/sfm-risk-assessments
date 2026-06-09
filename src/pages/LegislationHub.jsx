@@ -263,13 +263,13 @@ const LEGISLATION = [
 const CATEGORIES = ['All', 'Health & Safety', 'Fire Safety', 'Food Safety', 'Safeguarding', 'Data & Privacy', 'Events & Licensing', 'Maintenance'];
 
 const CATEGORY_COLORS = {
-  'Health & Safety':    '#0891b2',
-  'Fire Safety':        '#dc2626',
-  'Food Safety':        '#16a34a',
-  'Safeguarding':       '#7c3aed',
-  'Data & Privacy':     '#d97706',
-  'Events & Licensing': '#0f172a',
-  'Maintenance':        '#b45309',
+  'Health & Safety':    '#0E6B82',
+  'Fire Safety':        '#8B2430',
+  'Food Safety':        '#1A5C38',
+  'Safeguarding':       '#452870',
+  'Data & Privacy':     '#8B5B18',
+  'Events & Licensing': '#1A3D2B',
+  'Maintenance':        '#9A6B1E',
 };
 
 const KEY_RESOURCES = [
@@ -340,18 +340,18 @@ export default function LegislationHub({ isAdmin }) {
     <div>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Legislation & Compliance</h1>
-        <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>
+        <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 600, color: '#1C1C1A', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '-0.01em' }}>Legislation & Compliance</h1>
+        <p style={{ margin: 0, fontSize: 13, color: '#8C887E' }}>
           {LEGISLATION.length} pieces of legislation · {alertCount} require attention · Links open official sources
         </p>
       </div>
 
       {/* Alerts banner */}
       {LEGISLATION.filter(l => l.alert).length > 0 && (
-        <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
-          <div style={{ fontWeight: 700, color: '#d97706', marginBottom: 8, fontSize: 13 }}>⚠ Items requiring attention</div>
+        <div style={{ background: '#FDF3E4', border: '1px solid #D4AA6A', borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
+          <div style={{ fontWeight: 700, color: '#8B5B18', marginBottom: 8, fontSize: 13 }}>⚠ Items requiring attention</div>
           {LEGISLATION.filter(l => l.alert).map(l => (
-            <div key={l.id} style={{ fontSize: 13, color: '#92400e', marginBottom: 4 }}>
+            <div key={l.id} style={{ fontSize: 13, color: '#7A4A10', marginBottom: 4 }}>
               <strong>{l.ref}:</strong> {l.alert}
             </div>
           ))}
@@ -363,16 +363,16 @@ export default function LegislationHub({ isAdmin }) {
         {CATEGORIES.map(c => (
           <button key={c} onClick={() => setActiveCategory(c)} style={{
             padding: '6px 13px', borderRadius: 6, border: '1px solid',
-            borderColor: activeCategory === c ? (CATEGORY_COLORS[c] || '#0f172a') : '#e2e8f0',
-            background: activeCategory === c ? (CATEGORY_COLORS[c] || '#0f172a') : '#fff',
-            color: activeCategory === c ? '#fff' : '#475569',
+            borderColor: activeCategory === c ? (CATEGORY_COLORS[c] || '#1C1C1A') : '#E4DDD2',
+            background: activeCategory === c ? (CATEGORY_COLORS[c] || '#1C1C1A') : '#FEFEFC',
+            color: activeCategory === c ? '#FEFEFC' : '#5C5852',
             fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
           }}>{c}</button>
         ))}
         <input
           value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search legislation…"
-          style={{ marginLeft: 'auto', padding: '7px 12px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, width: 220, fontFamily: 'inherit', outline: 'none' }}
+          style={{ marginLeft: 'auto', padding: '7px 12px', borderRadius: 6, border: '1px solid #E4DDD2', fontSize: 13, width: 220, fontFamily: 'inherit', outline: 'none' }}
         />
       </div>
 
@@ -380,11 +380,11 @@ export default function LegislationHub({ isAdmin }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 40 }}>
         {filtered.map(l => {
           const isOpen = expanded === l.id;
-          const color = CATEGORY_COLORS[l.category] || '#64748b';
+          const color = CATEGORY_COLORS[l.category] || '#8C887E';
           const lastChecked = checkedDates[l.id] || l.lastChecked;
 
           return (
-            <div key={l.id} style={{ background: '#fff', border: '1px solid', borderColor: l.alert ? '#fcd34d' : '#e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
+            <div key={l.id} style={{ background: '#FEFEFC', border: '1px solid', borderColor: l.alert ? '#D4AA6A' : '#E4DDD2', borderRadius: 10, overflow: 'hidden' }}>
               {/* Card header — always visible */}
               <div onClick={() => setExpanded(isOpen ? null : l.id)}
                 style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer' }}>
@@ -392,44 +392,44 @@ export default function LegislationHub({ isAdmin }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color, fontFamily: 'Arial, sans-serif', minWidth: 90 }}>{l.ref}</span>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>{l.name}</span>
-                    {l.alert && <span style={{ fontSize: 11, background: '#fef3c7', color: '#d97706', border: '1px solid #fcd34d', borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>⚠ Note</span>}
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1C1C1A' }}>{l.name}</span>
+                    {l.alert && <span style={{ fontSize: 11, background: '#FDF3E4', color: '#8B5B18', border: '1px solid #D4AA6A', borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>⚠ Note</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 3, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: 12, color: '#8C887E', marginTop: 3, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <span style={{ background: color + '18', color, border: `1px solid ${color}33`, borderRadius: 4, padding: '1px 7px', fontWeight: 600 }}>{l.category}</span>
                     <span>Last checked: {new Date(lastChecked).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   </div>
                 </div>
-                <span style={{ fontSize: 16, color: '#94a3b8', flexShrink: 0 }}>{isOpen ? '▲' : '▼'}</span>
+                <span style={{ fontSize: 16, color: '#C8C2B8', flexShrink: 0 }}>{isOpen ? '▲' : '▼'}</span>
               </div>
 
               {/* Expanded detail */}
               {isOpen && (
                 <div style={{ borderTop: '1px solid #f1f5f9', padding: '16px 20px 20px 20px' }}>
                   <div style={{ marginBottom: 14 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>What it requires</div>
-                    <p style={{ margin: 0, fontSize: 13, color: '#374151', lineHeight: 1.6 }}>{l.summary}</p>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#8C887E', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>What it requires</div>
+                    <p style={{ margin: 0, fontSize: 13, color: '#2A2A28', lineHeight: 1.6 }}>{l.summary}</p>
                   </div>
-                  <div style={{ marginBottom: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '12px 14px' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>What this means for STF</div>
-                    <p style={{ margin: 0, fontSize: 13, color: '#166534', lineHeight: 1.6 }}>{l.stfNote}</p>
+                  <div style={{ marginBottom: 14, background: '#EAF4EE', border: '1px solid #9BCAAC', borderRadius: 8, padding: '12px 14px' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#1A5C38', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>What this means for STF</div>
+                    <p style={{ margin: 0, fontSize: 13, color: '#1A4E2C', lineHeight: 1.6 }}>{l.stfNote}</p>
                   </div>
                   {l.alert && (
-                    <div style={{ marginBottom: 14, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 8, padding: '12px 14px' }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>⚠ Action needed</div>
-                      <p style={{ margin: 0, fontSize: 13, color: '#92400e', lineHeight: 1.6 }}>{l.alert}</p>
+                    <div style={{ marginBottom: 14, background: '#FDF3E4', border: '1px solid #D4AA6A', borderRadius: 8, padding: '12px 14px' }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#8B5B18', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>⚠ Action needed</div>
+                      <p style={{ margin: 0, fontSize: 13, color: '#7A4A10', lineHeight: 1.6 }}>{l.alert}</p>
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                     <a href={l.link} target="_blank" rel="noreferrer"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#0f172a', color: '#fff', borderRadius: 6, padding: '7px 14px', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#1C1C1A', color: '#FEFEFC', borderRadius: 6, padding: '7px 14px', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
                       View official source: {l.linkLabel} ↗
                     </a>
                     {isAdmin && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 12, color: '#64748b' }}>Mark as checked today:</span>
+                        <span style={{ fontSize: 12, color: '#8C887E' }}>Mark as checked today:</span>
                         <button onClick={() => markChecked(l.id)}
-                          style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', color: '#475569' }}>
+                          style={{ background: '#f1f5f9', border: '1px solid #E4DDD2', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', color: '#5C5852' }}>
                           ✓ Checked {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </button>
                       </div>
@@ -443,23 +443,23 @@ export default function LegislationHub({ isAdmin }) {
       </div>
 
       {/* Key resources */}
-      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 24 }}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>Key Resources & Contacts</h3>
+      <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 24 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8C887E' }}>Key Resources & Contacts</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
           {KEY_RESOURCES.map(r => (
             <a key={r.name} href={r.link} target="_blank" rel="noreferrer"
-              style={{ display: 'block', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '14px 16px', textDecoration: 'none', transition: 'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = '#94a3b8'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}>
+              style={{ display: 'block', background: '#F5F2EB', border: '1px solid #E4DDD2', borderRadius: 8, padding: '14px 16px', textDecoration: 'none', transition: 'border-color 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = '#C8C2B8'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = '#E4DDD2'}>
               <div style={{ fontSize: 20, marginBottom: 6 }}>{r.icon}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>{r.name}</div>
-              <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>{r.description}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#1C1C1A', marginBottom: 4 }}>{r.name}</div>
+              <div style={{ fontSize: 12, color: '#8C887E', lineHeight: 1.5 }}>{r.description}</div>
             </a>
           ))}
         </div>
       </div>
 
-      <div style={{ marginTop: 16, padding: '12px 16px', background: '#f8fafc', borderRadius: 8, fontSize: 12, color: '#94a3b8' }}>
+      <div style={{ marginTop: 16, padding: '12px 16px', background: '#F5F2EB', borderRadius: 8, fontSize: 12, color: '#C8C2B8' }}>
         <strong>Note:</strong> This hub provides signposting to official sources. Legislation changes — always verify current requirements at the linked official source before relying on them for compliance purposes. Last full review of this hub: January 2025.
       </div>
     </div>
