@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   loadAll, saveAssessment, saveStaff, saveSettings,
-  patchLocalAssessments, syncToSheets, DEFAULT_STAFF, DEFAULT_SETTINGS,
+  patchLocalAssessments, syncToSheets, deleteAssessment,
+  DEFAULT_STAFF, DEFAULT_SETTINGS,
 } from '../utils/storage';
 import { getRiskLevel } from '../data/riskData';
 import { ALL_TEMPLATES } from '../data/templates';
@@ -21,10 +22,15 @@ export function useRiskAssessments() {
 
       if (data.assessments && data.assessments.length > 0) {
         // ── Auto-status: Active → Needs Review when review date has passed ──
+        // Also migrates legacy 'review' status to 'needs_review' (bug 0.1).
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         let changed = false;
         const withStatus = data.assessments.map(a => {
+          if (a.status === 'review') {
+            changed = true;
+            return { ...a, status: 'needs_review', updatedAt: new Date().toISOString() };
+          }
           if (
             a.status === 'active' &&
             a.reviewDate &&
@@ -90,7 +96,7 @@ export function useRiskAssessments() {
     setSaving(true);
     setAssessments(next);
     try {
-      await saveAssessment(null, next);
+      await deleteAssessment(id, next);
     } catch (e) { setError(e.message); }
     setSaving(false);
   }, [assessments]);

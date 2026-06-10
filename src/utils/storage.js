@@ -182,7 +182,11 @@ export async function saveStaff(staff) {
 
   if (!SHEETS_ENABLED) return;
   try {
-    await sheetsWrite('staff!A2:E', staff.map(staffToRow), 'update');
+    // Clear first so removed staff members don't survive as trailing rows.
+    await sheetsWrite('staff!A2:E', [], 'clear');
+    if (staff.length > 0) {
+      await sheetsWrite('staff!A2:E', staff.map(staffToRow), 'update');
+    }
     await appendAuditLog('Updated staff directory');
   } catch (err) {
     console.error('Sheets staff save failed:', err);
@@ -197,10 +201,49 @@ export async function saveSettings(settings) {
   if (!SHEETS_ENABLED) return;
   try {
     const rows = Object.entries(settings).map(([k, v]) => [k, v]);
-    await sheetsWrite('settings!A2:B', rows, 'update');
+    // Clear first so removed setting keys don't survive as trailing rows.
+    await sheetsWrite('settings!A2:B', [], 'clear');
+    if (rows.length > 0) {
+      await sheetsWrite('settings!A2:B', rows, 'update');
+    }
     await appendAuditLog('Updated settings');
   } catch (err) {
     console.error('Sheets settings save failed:', err);
+  }
+}
+
+// Delete an assessment and its hazards from Sheets. The previous implementation
+// (calling saveAssessment(null, ...)) silently no-op'd on the sheet — see PLANS.md
+// bug 0.2. We rewrite both tabs from the remaining state.
+export async function deleteAssessment(id, remainingAssessments) {
+  saveToLocal({ assessments: remainingAssessments });
+
+  if (!SHEETS_ENABLED) return;
+
+  try {
+    const raRows = remainingAssessments.map(raToRow);
+    const hazardRows = remainingAssessments.flatMap((ra) =>
+      (ra.hazards || []).map((h, i) => hazardToRow({
+        ...h,
+        id:           `${ra.id}_h${i}`,
+        assessmentId: ra.id,
+        sortOrder:    i,
+      }))
+    );
+
+    await sheetsWrite('assessments!A2:V', [], 'clear');
+    if (raRows.length > 0) {
+      await sheetsWrite('assessments!A2:V', raRows, 'update');
+    }
+
+    await sheetsWrite('hazards!A2:K', [], 'clear');
+    if (hazardRows.length > 0) {
+      await sheetsWrite('hazards!A2:K', hazardRows, 'update');
+    }
+
+    await appendAuditLog(`Deleted assessment: ${id}`);
+  } catch (err) {
+    console.error('Sheets delete failed:', err);
   }
 }
 

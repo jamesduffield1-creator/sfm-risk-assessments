@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { getRiskLevel, WHO_AT_RISK_OPTIONS, HAZARD_BANK, CATEGORY_COLORS } from '../data/riskData';
+import { getRiskLevel, RISK_LEVELS, WHO_AT_RISK_OPTIONS, HAZARD_BANK, CATEGORY_COLORS } from '../data/riskData';
 import { LIBRARY_CATEGORIES, getAllLibraryEntries, loadCustomLibrary, saveCustomLibrary } from '../data/hazardLibrary';
 
 const css = {
@@ -141,7 +141,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
                 <select value={local.status || 'draft'} onChange={e => update('status', e.target.value)} style={css.select}>
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
-                  <option value="review">Needs Review</option>
+                  <option value="needs_review">Needs Review</option>
                   <option value="archived">Archived</option>
                 </select>
               </Field>
@@ -287,10 +287,10 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
           {/* Risk summary */}
           <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 18 }}>
             <h3 style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>Risk Summary</h3>
-            {[['Low','#16a34a','#dcfce7','#86efac'],['Medium','#d97706','#fef3c7','#fcd34d'],['High','#dc2626','#fee2e2','#fca5a5'],['Critical','#7c3aed','#ede9fe','#c4b5fd']].map(([level, color, bg, border]) => (
+            {Object.entries(RISK_LEVELS).map(([level, { color, bg, border }]) => (
               <div key={level} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <span style={{ background: bg, color, border: `1px solid ${border}`, borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>{level}</span>
-                <span style={{ fontSize: 20, fontWeight: 700, color: riskSummary[level] > 0 ? color : '#cbd5e1' }}>{riskSummary[level]}</span>
+                <span style={{ fontSize: 20, fontWeight: 700, color: riskSummary[level] > 0 ? color : '#C8C2B8' }}>{riskSummary[level]}</span>
               </div>
             ))}
           </div>
