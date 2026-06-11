@@ -8,6 +8,7 @@ import RAPreview from './pages/RAPreview';
 import StaffSettings from './pages/StaffSettings';
 import RAWizard from './pages/RAWizard';
 import LegislationHub from './pages/LegislationHub';
+import HazardLibrary from './pages/HazardLibrary';
 
 function AppShell() {
   const { isAdmin, logout } = useAuth();
@@ -65,6 +66,7 @@ function AppShell() {
               { key: 'dashboard',   label: 'Dashboard' },
               { key: 'list',        label: 'Assessments' },
               { key: 'legislation', label: 'Legislation' },
+              { key: 'library',     label: 'Hazard Library' },
               ...(isAdmin ? [{ key: 'settings', label: 'Staff & Settings' }] : []),
             ].map(({ key, label }) => (
               <button key={key} onClick={() => setPage(key)} style={{
@@ -130,6 +132,9 @@ function AppShell() {
         )}
         {page === 'legislation' && (
           <LegislationHub isAdmin={isAdmin} />
+        )}
+        {page === 'library' && (
+          <HazardLibrary isAdmin={isAdmin} />
         )}
         {page === 'settings' && isAdmin && (
           <StaffSettings
