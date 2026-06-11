@@ -65,8 +65,8 @@ function buildHazardDefaults(group) {
 
 const css = {
   btn:   (bg, color, extra = {}) => ({ background: bg, color, border: 'none', borderRadius: 7, padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', ...extra }),
-  input: { width: '100%', padding: '9px 12px', borderRadius: 7, border: '1px solid #e2e8f0', fontSize: 14, color: '#0f172a', background: '#fff', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
-  label: { display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' },
+  input: { width: '100%', padding: '9px 12px', borderRadius: 7, border: '1px solid #e2e8f0', fontSize: 14, color: '#1C1C1A', background: '#fff', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
+  label: { display: 'block', fontSize: 11, fontWeight: 700, color: '#8C887E', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' },
 };
 
 export default function RAWizard({ onConfirm, onCancel }) {
@@ -181,10 +181,10 @@ export default function RAWizard({ onConfirm, onCancel }) {
       <div style={{ background: '#fff', borderRadius: 14, width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
 
         {/* Header */}
-        <div style={{ background: '#0f172a', borderRadius: '14px 14px 0 0', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ background: '#1A3D2B', borderRadius: '14px 14px 0 0', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>New Risk Assessment</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.55)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4 }}>New Risk Assessment</div>
+            <div style={{ fontSize: 17, fontWeight: 600, color: '#fff', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.01em' }}>
               {step === 1 && 'Step 1 — About this activity'}
               {step === 2 && 'Step 2 — Activity characteristics'}
               {step === 3 && 'Step 3 — Suggested hazards'}
@@ -193,7 +193,7 @@ export default function RAWizard({ onConfirm, onCancel }) {
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             {[1,2,3,4].map(n => (
-              <div key={n} style={{ width: 28, height: 6, borderRadius: 3, background: n <= step ? '#60a5fa' : '#334155' }} />
+              <div key={n} style={{ width: 28, height: 6, borderRadius: 3, background: n <= step ? '#C8952E' : 'rgba(255,255,255,.25)' }} />
             ))}
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function RAWizard({ onConfirm, onCancel }) {
           {/* ── Step 1: Name / Category / Location ── */}
           {step === 1 && (
             <div>
-              <p style={{ margin: '0 0 22px', fontSize: 14, color: '#475569' }}>
+              <p style={{ margin: '0 0 22px', fontSize: 14, color: '#5C5852' }}>
                 Tell us what this assessment covers and we'll suggest relevant hazards.
               </p>
               <div style={{ marginBottom: 16 }}>
@@ -220,9 +220,9 @@ export default function RAWizard({ onConfirm, onCancel }) {
                   {CATEGORIES.map(c => (
                     <button key={c} onClick={() => setCategory(c)} style={{
                       padding: '10px 8px', borderRadius: 8, border: '2px solid',
-                      borderColor: category === c ? (CATEGORY_COLORS[c] || '#0f172a') : '#e2e8f0',
-                      background: category === c ? (CATEGORY_COLORS[c] || '#0f172a') + '15' : '#f8fafc',
-                      color: category === c ? (CATEGORY_COLORS[c] || '#0f172a') : '#475569',
+                      borderColor: category === c ? (CATEGORY_COLORS[c] || '#1A3D2B') : '#E4DDD2',
+                      background: category === c ? (CATEGORY_COLORS[c] || '#1A3D2B') + '15' : '#F5F2EB',
+                      color: category === c ? (CATEGORY_COLORS[c] || '#1A3D2B') : '#5C5852',
                       fontWeight: category === c ? 700 : 500, fontSize: 13,
                       cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
                     }}>{c}</button>
@@ -239,7 +239,7 @@ export default function RAWizard({ onConfirm, onCancel }) {
           {/* ── Step 2: Flags ── */}
           {step === 2 && (
             <div>
-              <p style={{ margin: '0 0 22px', fontSize: 14, color: '#475569' }}>
+              <p style={{ margin: '0 0 22px', fontSize: 14, color: '#5C5852' }}>
                 Select everything that applies. This helps us suggest the right hazards.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -247,14 +247,14 @@ export default function RAWizard({ onConfirm, onCancel }) {
                   const on = flags[key];
                   return (
                     <div key={key} onClick={() => setFlags(f => ({ ...f, [key]: !f[key] }))}
-                      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 10, border: '2px solid', borderColor: on ? '#0f172a' : '#e2e8f0', background: on ? '#0f172a' : '#f8fafc', cursor: 'pointer' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 10, border: '2px solid', borderColor: on ? '#1A3D2B' : '#E4DDD2', background: on ? '#1A3D2B' : '#F5F2EB', cursor: 'pointer' }}>
                       <span style={{ fontSize: 22 }}>{icon}</span>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: on ? '#fff' : '#0f172a' }}>{label}</div>
-                        <div style={{ fontSize: 12, color: on ? '#94a3b8' : '#64748b', marginTop: 2 }}>{note}</div>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: on ? '#fff' : '#1A3D2B' }}>{label}</div>
+                        <div style={{ fontSize: 12, color: on ? 'rgba(255,255,255,.65)' : '#8C887E', marginTop: 2 }}>{note}</div>
                       </div>
-                      <div style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid', borderColor: on ? '#fff' : '#cbd5e1', background: on ? '#fff' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {on && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#0f172a' }} />}
+                      <div style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid', borderColor: on ? '#fff' : '#C8C2B8', background: on ? '#fff' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {on && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#1A3D2B' }} />}
                       </div>
                     </div>
                   );
@@ -266,14 +266,14 @@ export default function RAWizard({ onConfirm, onCancel }) {
           {/* ── Step 3: Suggested hazards ── */}
           {step === 3 && (
             <div>
-              <p style={{ margin: '0 0 6px', fontSize: 14, color: '#475569' }}>
+              <p style={{ margin: '0 0 6px', fontSize: 14, color: '#5C5852' }}>
                 Based on your answers, we've pre-selected relevant hazards. Untick anything you don't need.
               </p>
-              <p style={{ margin: '0 0 18px', fontSize: 12, color: '#94a3b8' }}>
+              <p style={{ margin: '0 0 18px', fontSize: 12, color: '#C8C2B8' }}>
                 {selectedCount} hazard{selectedCount !== 1 ? 's' : ''} selected · You can add more in the editor
               </p>
               {suggestedGroups.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8' }}>
+                <div style={{ textAlign: 'center', padding: '32px 0', color: '#C8C2B8' }}>
                   No category selected — hazards will be added manually in the editor.
                 </div>
               )}
@@ -283,22 +283,22 @@ export default function RAWizard({ onConfirm, onCancel }) {
                 return (
                   <div key={group} style={{ marginBottom: 18 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{group}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#2A2A28', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{group}</span>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => toggleGroup(group, true)} style={{ fontSize: 11, color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>All</button>
-                        <button onClick={() => toggleGroup(group, false)} style={{ fontSize: 11, color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>None</button>
-                        <span style={{ fontSize: 11, color: '#94a3b8' }}>{groupSelected}/{items.length}</span>
+                        <button onClick={() => toggleGroup(group, false)} style={{ fontSize: 11, color: '#C8C2B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>None</button>
+                        <span style={{ fontSize: 11, color: '#C8C2B8' }}>{groupSelected}/{items.length}</span>
                       </div>
                     </div>
                     {items.map(text => {
                       const on = selectedHazards?.[text] ?? true;
                       return (
                         <div key={text} onClick={() => toggleHazard(text)}
-                          style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 10px', marginBottom: 4, borderRadius: 7, border: '1px solid', borderColor: on ? '#cbd5e1' : '#f1f5f9', background: on ? '#f8fafc' : '#fff', cursor: 'pointer' }}>
-                          <div style={{ width: 18, height: 18, borderRadius: 4, border: '2px solid', borderColor: on ? '#0f172a' : '#cbd5e1', background: on ? '#0f172a' : '#fff', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 10px', marginBottom: 4, borderRadius: 7, border: '1px solid', borderColor: on ? '#C8C2B8' : '#F5F2EB', background: on ? '#F5F2EB' : '#fff', cursor: 'pointer' }}>
+                          <div style={{ width: 18, height: 18, borderRadius: 4, border: '2px solid', borderColor: on ? '#1A3D2B' : '#C8C2B8', background: on ? '#1A3D2B' : '#fff', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             {on && <span style={{ color: '#fff', fontSize: 11, fontWeight: 900, lineHeight: 1 }}>✓</span>}
                           </div>
-                          <span style={{ fontSize: 13, color: on ? '#0f172a' : '#94a3b8', lineHeight: 1.4 }}>{text}</span>
+                          <span style={{ fontSize: 13, color: on ? '#1A3D2B' : '#C8C2B8', lineHeight: 1.4 }}>{text}</span>
                         </div>
                       );
                     })}
@@ -313,32 +313,32 @@ export default function RAWizard({ onConfirm, onCancel }) {
             <div>
               {matchingTemplates.length > 0 ? (
                 <>
-                  <p style={{ margin: '0 0 6px', fontSize: 14, color: '#475569' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: 14, color: '#5C5852' }}>
                     We have {matchingTemplates.length} ready-made template{matchingTemplates.length !== 1 ? 's' : ''} for <strong>{category}</strong> activities.
                   </p>
-                  <p style={{ margin: '0 0 18px', fontSize: 13, color: '#94a3b8' }}>
+                  <p style={{ margin: '0 0 18px', fontSize: 13, color: '#C8C2B8' }}>
                     Start from a template for a fully pre-filled assessment, or use your custom hazard selection from step 3.
                   </p>
                   <div style={{ marginBottom: 14 }}>
                     <div onClick={() => setChosenTemplate(null)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 9, border: '2px solid', borderColor: chosenTemplate === null ? '#0f172a' : '#e2e8f0', background: chosenTemplate === null ? '#0f172a0d' : '#fff', cursor: 'pointer', marginBottom: 8 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid', borderColor: chosenTemplate === null ? '#0f172a' : '#cbd5e1', background: chosenTemplate === null ? '#0f172a' : '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 9, border: '2px solid', borderColor: chosenTemplate === null ? '#1A3D2B' : '#E4DDD2', background: chosenTemplate === null ? '#0f172a0d' : '#fff', cursor: 'pointer', marginBottom: 8 }}>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid', borderColor: chosenTemplate === null ? '#1A3D2B' : '#C8C2B8', background: chosenTemplate === null ? '#1A3D2B' : '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {chosenTemplate === null && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a' }}>Use my custom hazard selection</div>
-                        <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{selectedCount} hazards selected in step 3</div>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: '#1C1C1A' }}>Use my custom hazard selection</div>
+                        <div style={{ fontSize: 12, color: '#8C887E', marginTop: 1 }}>{selectedCount} hazards selected in step 3</div>
                       </div>
                     </div>
                     {matchingTemplates.map(t => (
                       <div key={t.id} onClick={() => setChosenTemplate(t)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 9, border: '2px solid', borderColor: chosenTemplate?.id === t.id ? '#1e40af' : '#e2e8f0', background: chosenTemplate?.id === t.id ? '#eff6ff' : '#f8fafc', cursor: 'pointer', marginBottom: 8 }}>
-                        <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid', borderColor: chosenTemplate?.id === t.id ? '#1e40af' : '#cbd5e1', background: chosenTemplate?.id === t.id ? '#1e40af' : '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 9, border: '2px solid', borderColor: chosenTemplate?.id === t.id ? '#9A6B1E' : '#E4DDD2', background: chosenTemplate?.id === t.id ? '#FDF5E4' : '#F5F2EB', cursor: 'pointer', marginBottom: 8 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid', borderColor: chosenTemplate?.id === t.id ? '#9A6B1E' : '#C8C2B8', background: chosenTemplate?.id === t.id ? '#9A6B1E' : '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {chosenTemplate?.id === t.id && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
                         </div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a' }}><span style={{ color: '#94a3b8', marginRight: 6 }}>{t.ref}</span>{t.name}</div>
-                          <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{t.hazards?.length || 0} hazards · {t.legislation}</div>
+                          <div style={{ fontWeight: 700, fontSize: 13, color: '#1C1C1A' }}><span style={{ color: '#C8C2B8', marginRight: 6 }}>{t.ref}</span>{t.name}</div>
+                          <div style={{ fontSize: 12, color: '#8C887E', marginTop: 2 }}>{t.hazards?.length || 0} hazards · {t.legislation}</div>
                         </div>
                       </div>
                     ))}
@@ -347,8 +347,8 @@ export default function RAWizard({ onConfirm, onCancel }) {
               ) : (
                 <div style={{ textAlign: 'center', padding: '32px 0' }}>
                   <div style={{ fontSize: 32, marginBottom: 12 }}>✓</div>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: '#0f172a', marginBottom: 6 }}>Ready to go</div>
-                  <p style={{ fontSize: 14, color: '#64748b', margin: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16, color: '#1C1C1A', marginBottom: 6 }}>Ready to go</div>
+                  <p style={{ fontSize: 14, color: '#8C887E', margin: 0 }}>
                     No pre-built templates for this category — your {selectedCount} suggested hazards will be pre-loaded into the editor.
                   </p>
                 </div>
@@ -358,7 +358,7 @@ export default function RAWizard({ onConfirm, onCancel }) {
 
           {/* ── Navigation buttons ── */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 28, paddingTop: 20, borderTop: '1px solid #f1f5f9' }}>
-            <button onClick={step === 1 ? onCancel : () => setStep(s => s - 1)} style={css.btn('#f1f5f9', '#475569')}>
+            <button onClick={step === 1 ? onCancel : () => setStep(s => s - 1)} style={css.btn('#F5F2EB', '#5C5852')}>
               {step === 1 ? 'Cancel' : '← Back'}
             </button>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -370,13 +370,13 @@ export default function RAWizard({ onConfirm, onCancel }) {
                     else { setStep(s => s + 1); }
                   }}
                   disabled={step === 1 && !name.trim()}
-                  style={css.btn(step === 1 && !name.trim() ? '#e2e8f0' : '#0f172a', step === 1 && !name.trim() ? '#94a3b8' : '#fff')}
+                  style={css.btn(step === 1 && !name.trim() ? '#E4DDD2' : '#1A3D2B', step === 1 && !name.trim() ? '#C8C2B8' : '#fff')}
                 >
                   Next →
                 </button>
               )}
               {step === 4 && (
-                <button onClick={handleConfirm} style={css.btn('#16a34a', '#fff')}>
+                <button onClick={handleConfirm} style={css.btn('#1A3D2B', '#fff')}>
                   Open in editor →
                 </button>
               )}

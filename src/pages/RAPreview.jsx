@@ -153,31 +153,31 @@ export default function RAPreview({ ra, settings, onBack }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1e293b', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#F5F2EB', display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
-      <div style={{ background: '#0f172a', borderBottom: '1px solid #334155', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, flexShrink: 0, position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: '#1A3D2B', borderBottom: '1px solid rgba(0,0,0,.12)', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60, flexShrink: 0, position: 'sticky', top: 0, zIndex: 100, boxShadow: '2px 0 16px rgba(0,0,0,.15)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button onClick={onBack} style={{ background: 'transparent', border: '1px solid #334155', color: '#94a3b8', borderRadius: 6, padding: '6px 12px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>← Back</button>
+          <button onClick={onBack} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.2)', color: 'rgba(255,255,255,.6)', borderRadius: 6, padding: '6px 12px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>← Back</button>
           <div>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 8 }}>{ra.ref}</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{ra.name}</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 8 }}>{ra.ref}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,.92)', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.01em' }}>{ra.name}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {driveStatus === 'idle' && (
-            <button onClick={saveToDrive} style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', color: '#0f172a', border: 'none', borderRadius: 7, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={saveToDrive} style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#C8952E', color: '#fff', border: 'none', borderRadius: 7, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
               📂 Save to Google Drive
             </button>
           )}
-          {driveStatus === 'uploading' && <span style={{ fontSize: 13, color: '#94a3b8', background: '#1e293b', borderRadius: 7, padding: '8px 16px' }}>Saving to Drive…</span>}
+          {driveStatus === 'uploading' && <span style={{ fontSize: 13, color: 'rgba(255,255,255,.65)', background: 'rgba(0,0,0,.25)', borderRadius: 7, padding: '8px 16px' }}>Saving to Drive…</span>}
           {driveStatus === 'done' && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span style={{ background: '#dcfce7', color: '#15803d', borderRadius: 7, padding: '6px 12px', fontSize: 13, fontWeight: 600 }}>✓ Saved</span>
-              {driveLink && <a href={driveLink} target="_blank" rel="noreferrer" style={{ color: '#60a5fa', fontSize: 13 }}>Open ↗</a>}
+              <span style={{ background: '#EAF4EE', color: '#1A5C38', borderRadius: 7, padding: '6px 12px', fontSize: 13, fontWeight: 600 }}>✓ Saved</span>
+              {driveLink && <a href={driveLink} target="_blank" rel="noreferrer" style={{ color: '#C8952E', fontSize: 13 }}>Open ↗</a>}
             </div>
           )}
-          {driveStatus === 'error' && <button onClick={saveToDrive} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 7, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Drive failed — retry</button>}
-          <button onClick={openPDF} style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#dc2626', color: '#fff', border: 'none', borderRadius: 7, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+          {driveStatus === 'error' && <button onClick={saveToDrive} style={{ background: '#FAF0F1', color: '#8B2430', border: 'none', borderRadius: 7, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Drive failed — retry</button>}
+          <button onClick={openPDF} style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#FEFEFC', color: '#1A3D2B', border: 'none', borderRadius: 7, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             🖨 Open as PDF
           </button>
         </div>
