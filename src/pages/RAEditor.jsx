@@ -3,9 +3,9 @@ import { getRiskLevel, RISK_LEVELS, WHO_AT_RISK_OPTIONS, HAZARD_BANK, CATEGORY_C
 import { LIBRARY_CATEGORIES, getAllLibraryEntries, loadCustomLibrary, saveCustomLibrary } from '../data/hazardLibrary';
 
 const css = {
-  input:    { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, color: '#1C1C1A', background: '#fff', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
-  textarea: { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, color: '#1C1C1A', background: '#fff', boxSizing: 'border-box', outline: 'none', resize: 'vertical', minHeight: 60, fontFamily: 'inherit' },
-  select:   { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, color: '#1C1C1A', background: '#fff', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
+  input:    { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #E4DDD2', fontSize: 13, color: '#1C1C1A', background: '#FEFEFC', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
+  textarea: { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #E4DDD2', fontSize: 13, color: '#1C1C1A', background: '#FEFEFC', boxSizing: 'border-box', outline: 'none', resize: 'vertical', minHeight: 60, fontFamily: 'inherit' },
+  select:   { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #E4DDD2', fontSize: 13, color: '#1C1C1A', background: '#FEFEFC', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
   btn:      (bg, color) => ({ background: bg, color, border: 'none', borderRadius: 6, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }),
   label:    { display: 'block', fontSize: 11, fontWeight: 700, color: '#8C887E', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' },
 };
@@ -36,6 +36,8 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
   const [libCat, setLibCat] = useState('All');
   const [libSearch, setLibSearch] = useState('');
   const [customEntries, setCustomEntries] = useState(() => loadCustomLibrary());
+  const [saveToLibIdx, setSaveToLibIdx] = useState(null);
+  const [saveToLibCat, setSaveToLibCat] = useState(LIBRARY_CATEGORIES.find(c => c !== 'All') || 'Slips, Trips & Falls');
   const [dirty, setDirty] = useState(false);
 
   const update = (field, value) => { setLocal(l => ({ ...l, [field]: value })); setDirty(true); };
@@ -53,6 +55,25 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
   };
 
   const removeHazard = (idx) => update('hazards', local.hazards.filter((_, i) => i !== idx));
+
+  const saveHazardToLibrary = (idx) => {
+    const hz = local.hazards[idx];
+    if (!hz || !hz.hazard) return;
+    const entry = {
+      id: 'custom_' + Date.now(),
+      category: saveToLibCat,
+      hazard: hz.hazard,
+      who: hz.who || '',
+      existingControls: hz.existingControls || '',
+      likelihood: hz.likelihood || 2,
+      severity: hz.severity || 2,
+      additionalControls: hz.additionalControls || '',
+    };
+    const next = [...customEntries, entry];
+    setCustomEntries(next);
+    saveCustomLibrary(next);
+    setSaveToLibIdx(null);
+  };
 
   const addFromBank = (text) => {
     update('hazards', [...(local.hazards || []), { hazard: text, who: '', existingControls: '', likelihood: 2, severity: 2, additionalControls: '', owner: '', deadline: '' }]);
@@ -98,7 +119,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
   return (
     <div>
       {/* Sticky toolbar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, position: 'sticky', top: 60, zIndex: 50, background: '#F5F2EB', padding: '12px 0', borderBottom: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, position: 'sticky', top: 60, zIndex: 50, background: '#F5F2EB', padding: '12px 0', borderBottom: '1px solid #E4DDD2' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={onBack} style={css.btn('#F5F2EB', '#5C5852')}>← Back</button>
           <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, color: '#1C1C1A', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '-0.01em' }}>
@@ -117,7 +138,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
         {/* Main */}
         <div>
           {/* Assessment details */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 20, marginBottom: 16 }}>
+          <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 20, marginBottom: 16 }}>
             <h3 style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8C887E' }}>Assessment Details</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr', gap: 12 }}>
               <Field label="Ref"><input value={local.ref || ''} onChange={e => update('ref', e.target.value)} style={css.input} placeholder="P1" /></Field>
@@ -168,7 +189,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
           </div>
 
           {/* Hazards */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 20 }}>
+          <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8C887E' }}>
                 Hazards & Controls ({(local.hazards || []).length})
@@ -182,14 +203,14 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
 
             {/* Hazard bank */}
             {bankOpen && (
-              <div style={{ background: '#F5F2EB', border: '1px solid #e2e8f0', borderRadius: 8, padding: 14, marginBottom: 16 }}>
+              <div style={{ background: '#F5F2EB', border: '1px solid #E4DDD2', borderRadius: 8, padding: 14, marginBottom: 16 }}>
                 <p style={{ fontSize: 12, color: '#8C887E', margin: '0 0 10px', fontWeight: 600 }}>Click to add:</p>
                 {Object.entries(HAZARD_BANK).map(([cat, items]) => (
                   <div key={cat} style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#5C5852', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>{cat}</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                       {items.map(h => (
-                        <button key={h} onClick={() => addFromBank(h)} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: '#2A2A28', fontFamily: 'inherit' }}>{h}</button>
+                        <button key={h} onClick={() => addFromBank(h)} style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: '#2A2A28', fontFamily: 'inherit' }}>{h}</button>
                       ))}
                     </div>
                   </div>
@@ -210,6 +231,24 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <RiskBadge likelihood={hz.likelihood} severity={hz.severity} />
+                      {isAdmin && saveToLibIdx !== idx && hz.hazard && (
+                        <button onClick={() => setSaveToLibIdx(idx)} title="Save this hazard to the library"
+                          style={{ background: '#FDF5E4', color: '#9A6B1E', border: '1px solid #E0CFB0', borderRadius: 4, cursor: 'pointer', padding: '3px 9px', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>
+                          📚 + Library
+                        </button>
+                      )}
+                      {isAdmin && saveToLibIdx === idx && (
+                        <div style={{ display: 'flex', gap: 5, alignItems: 'center', background: '#FDF5E4', border: '1px solid #E0CFB0', borderRadius: 6, padding: '3px 6px' }}>
+                          <select value={saveToLibCat} onChange={e => setSaveToLibCat(e.target.value)}
+                            style={{ fontSize: 11, border: '1px solid #E0CFB0', borderRadius: 4, padding: '2px 6px', fontFamily: 'inherit', background: '#FEFEFC', color: '#1C1C1A' }}>
+                            {LIBRARY_CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                          <button onClick={() => saveHazardToLibrary(idx)}
+                            style={{ background: '#9A6B1E', color: '#fff', border: 'none', borderRadius: 4, padding: '3px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Save</button>
+                          <button onClick={() => setSaveToLibIdx(null)}
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#8C887E', fontSize: 13, padding: '0 2px' }}>✕</button>
+                        </div>
+                      )}
                       <button onClick={() => removeHazard(idx)} style={{ background: '#FAF0F1', border: 'none', borderRadius: 4, color: '#8B2430', cursor: 'pointer', padding: '3px 8px', fontSize: 12 }}>✕</button>
                     </div>
                   </div>
@@ -264,7 +303,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
         {/* Sidebar */}
         <div className="editor-sidebar">
           {/* Flags */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 18 }}>
+          <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 18 }}>
             <h3 style={{ margin: '0 0 14px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8C887E' }}>Activity Flags</h3>
             {[
               ['involvesChildren',       'Involves children',        "Apply children's ratios, DBS, safeguarding"],
@@ -274,7 +313,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
             ].map(([field, label, note]) => (
               <div key={field} style={{ display: 'flex', gap: 10, marginBottom: 12, alignItems: 'flex-start' }}>
                 <div onClick={() => update(field, !local[field])} style={{ width: 36, height: 20, borderRadius: 10, background: local[field] ? '#1A3D2B' : '#E4DDD2', cursor: 'pointer', position: 'relative', flexShrink: 0, marginTop: 2 }}>
-                  <div style={{ position: 'absolute', top: 2, left: local[field] ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                  <div style={{ position: 'absolute', top: 2, left: local[field] ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#FEFEFC', transition: 'left 0.15s' }} />
                 </div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#1C1C1A' }}>{label}</div>
@@ -285,7 +324,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
           </div>
 
           {/* Risk summary */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 18 }}>
+          <div style={{ background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 10, padding: 18 }}>
             <h3 style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8C887E' }}>Risk Summary</h3>
             {Object.entries(RISK_LEVELS).map(([level, { color, bg, border }]) => (
               <div key={level} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -296,7 +335,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
           </div>
 
           {/* References */}
-          <div style={{ background: '#F5F2EB', border: '1px solid #e2e8f0', borderRadius: 10, padding: 16 }}>
+          <div style={{ background: '#F5F2EB', border: '1px solid #E4DDD2', borderRadius: 10, padding: 16 }}>
             <h3 style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8C887E' }}>References</h3>
             <p style={{ fontSize: 12, color: '#5C5852', margin: '0 0 5px' }}><strong>Ecclesiastical:</strong> 0345 600 7531</p>
             <p style={{ fontSize: 12, color: '#5C5852', margin: '0 0 5px' }}><strong>RIDDOR:</strong> hse.gov.uk/riddor</p>
@@ -308,9 +347,9 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
       {/* ── Hazard Library Modal ─────────────────────────────────────────── */}
       {libraryOpen && (
         <div style={{ position: 'fixed', inset: 0, background: '#00000088', zIndex: 300, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '32px 24px', overflowY: 'auto' }}>
-          <div style={{ background: '#fff', borderRadius: 14, width: '100%', maxWidth: 820, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: '#FEFEFC', borderRadius: 14, width: '100%', maxWidth: 820, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             {/* Modal header */}
-            <div style={{ padding: '20px 24px 14px', borderBottom: '1px solid #e2e8f0', flexShrink: 0 }}>
+            <div style={{ padding: '20px 24px 14px', borderBottom: '1px solid #E4DDD2', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <div>
                   <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, color: '#1C1C1A', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '-0.01em' }}>📚 Hazard Library</h2>
@@ -322,7 +361,7 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
               <input
                 value={libSearch} onChange={e => setLibSearch(e.target.value)}
                 placeholder="Search hazards…"
-                style={{ width: '100%', padding: '8px 12px', borderRadius: 7, border: '1px solid #e2e8f0', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 7, border: '1px solid #E4DDD2', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }}
               />
               {/* Category tabs */}
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
@@ -345,10 +384,10 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
               )}
               {filteredLibrary.map(entry => {
                 const r = getRiskLevel(entry.likelihood, entry.severity);
-                const isCustom = !entry.id.match(/^[a-z_]+$/);
+                const isCustom = entry.id.startsWith('custom_');
                 return (
                   <div key={entry.id} onClick={() => addFromLibrary(entry)}
-                    style={{ border: `1px solid ${r.border}`, borderLeft: `4px solid ${r.color}`, borderRadius: 8, padding: '11px 14px', marginBottom: 8, cursor: 'pointer', background: '#fff', transition: 'box-shadow 0.12s' }}
+                    style={{ border: `1px solid ${r.border}`, borderLeft: `4px solid ${r.color}`, borderRadius: 8, padding: '11px 14px', marginBottom: 8, cursor: 'pointer', background: '#FEFEFC', transition: 'box-shadow 0.12s' }}
                     onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)'}
                     onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
                   >
@@ -370,15 +409,12 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
               })}
             </div>
 
-            {/* Add custom entry */}
+            {/* Tip footer */}
             {isAdmin && (
-              <div style={{ borderTop: '1px solid #e2e8f0', padding: '12px 20px', flexShrink: 0, background: '#F5F2EB', borderRadius: '0 0 14px 14px' }}>
-                <details>
-                  <summary style={{ fontSize: 12, fontWeight: 700, color: '#5C5852', cursor: 'pointer', userSelect: 'none' }}>+ Save current hazard rows as library entries</summary>
-                  <p style={{ fontSize: 12, color: '#C8C2B8', margin: '6px 0' }}>
-                    To add a custom entry: add a hazard row to this assessment first, then come back here — custom entries can be saved from the hazard row using a future update. For now, use "Blank hazard" and fill manually.
-                  </p>
-                </details>
+              <div style={{ borderTop: '1px solid #E4DDD2', padding: '12px 20px', flexShrink: 0, background: '#F5F2EB', borderRadius: '0 0 14px 14px' }}>
+                <p style={{ fontSize: 12, color: '#8C887E', margin: 0, fontFamily: 'inherit', lineHeight: 1.5 }}>
+                  💡 To save a hazard to the library, click <strong style={{ color: '#9A6B1E' }}>📚 + Library</strong> on any hazard row. Manage saved entries from the <strong style={{ color: '#1C1C1A' }}>Hazard Library</strong> page in the main nav.
+                </p>
               </div>
             )}
           </div>

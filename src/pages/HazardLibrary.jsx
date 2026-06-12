@@ -1,17 +1,25 @@
 import { useState, useMemo } from 'react';
-import { BUILT_IN_LIBRARY, LIBRARY_CATEGORIES, loadCustomLibrary } from '../data/hazardLibrary';
+import {
+  BUILT_IN_LIBRARY, LIBRARY_CATEGORIES,
+  loadCustomLibrary, saveCustomLibrary,
+} from '../data/hazardLibrary';
 import { getRiskLevel } from '../data/riskData';
 
 const serif = "'Playfair Display', Georgia, serif";
 const sans  = "'DM Sans', system-ui, sans-serif";
 
+const inputStyle = { width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid #E4DDD2', fontSize: 13, color: '#1C1C1A', background: '#FEFEFC', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' };
+const labelStyle = { display: 'block', fontSize: 10, fontWeight: 600, color: '#8C887E', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em' };
+
 export default function HazardLibrary({ isAdmin }) {
   const [category, setCategory] = useState('All');
   const [search, setSearch]     = useState('');
+  const [customEntries, setCustomEntries] = useState(() => loadCustomLibrary());
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft]         = useState(null);
 
-  const customEntries = useMemo(() => loadCustomLibrary(), []);
-  const customIds     = useMemo(() => new Set(customEntries.map(c => c.id)), [customEntries]);
-  const allEntries    = useMemo(() => [...BUILT_IN_LIBRARY, ...customEntries], [customEntries]);
+  const customIds  = useMemo(() => new Set(customEntries.map(c => c.id)), [customEntries]);
+  const allEntries = useMemo(() => [...BUILT_IN_LIBRARY, ...customEntries], [customEntries]);
 
   const filtered = useMemo(() => allEntries.filter(e => {
     if (category !== 'All' && e.category !== category) return false;
@@ -26,6 +34,27 @@ export default function HazardLibrary({ isAdmin }) {
     }
     return true;
   }), [allEntries, category, search]);
+
+  const startEdit = (entry) => {
+    setEditingId(entry.id);
+    setDraft({ ...entry });
+  };
+  const cancelEdit = () => { setEditingId(null); setDraft(null); };
+  const saveEdit = () => {
+    if (!draft || !draft.hazard) return;
+    const next = customEntries.map(e => e.id === editingId ? { ...draft, id: editingId } : e);
+    setCustomEntries(next);
+    saveCustomLibrary(next);
+    cancelEdit();
+  };
+  const deleteEntry = (id) => {
+    if (!window.confirm('Delete this custom hazard entry?')) return;
+    const next = customEntries.filter(e => e.id !== id);
+    setCustomEntries(next);
+    saveCustomLibrary(next);
+    if (editingId === id) cancelEdit();
+  };
+  const setField = (k, v) => setDraft(d => ({ ...d, [k]: v }));
 
   return (
     <div style={{ animation: 'fadeIn .25s ease both' }}>
@@ -68,6 +97,65 @@ export default function HazardLibrary({ isAdmin }) {
         {filtered.map((entry, i) => {
           const r = getRiskLevel(entry.likelihood, entry.severity);
           const isCustom = customIds.has(entry.id);
+          const isEditing = editingId === entry.id;
+
+          if (isEditing && draft) {
+            return (
+              <div key={entry.id} style={{
+                background: '#FDF5E4',
+                border: '1px solid #E0CFB0',
+                borderLeft: '3px solid #9A6B1E',
+                borderRadius: 10, padding: '14px 16px',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#9A6B1E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, fontFamily: sans }}>
+                  Editing custom entry
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <label style={labelStyle}>Category</label>
+                    <select value={draft.category} onChange={e => setField('category', e.target.value)} style={inputStyle}>
+                      {LIBRARY_CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Who is at risk</label>
+                    <input value={draft.who || ''} onChange={e => setField('who', e.target.value)} style={inputStyle} />
+                  </div>
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={labelStyle}>Hazard description</label>
+                  <input value={draft.hazard || ''} onChange={e => setField('hazard', e.target.value)} style={inputStyle} />
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={labelStyle}>Existing controls</label>
+                  <textarea value={draft.existingControls || ''} onChange={e => setField('existingControls', e.target.value)} style={{ ...inputStyle, minHeight: 56, resize: 'vertical' }} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <label style={labelStyle}>Likelihood</label>
+                    <select value={draft.likelihood} onChange={e => setField('likelihood', Number(e.target.value))} style={inputStyle}>
+                      <option value={1}>1 — Unlikely</option><option value={2}>2 — Possible</option><option value={3}>3 — Likely</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Severity</label>
+                    <select value={draft.severity} onChange={e => setField('severity', Number(e.target.value))} style={inputStyle}>
+                      <option value={1}>1 — Minor</option><option value={2}>2 — Significant</option><option value={3}>3 — Major/Fatal</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Additional controls</label>
+                    <input value={draft.additionalControls || ''} onChange={e => setField('additionalControls', e.target.value)} style={inputStyle} placeholder="Optional" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button onClick={cancelEdit} style={{ background: '#FEFEFC', color: '#5C5852', border: '1px solid #E4DDD2', borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+                  <button onClick={saveEdit} style={{ background: '#1A3D2B', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Save changes</button>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <div key={entry.id} style={{
               background: '#FEFEFC',
@@ -99,14 +187,27 @@ export default function HazardLibrary({ isAdmin }) {
                   <span style={{ fontWeight: 600, color: '#1C1C1A' }}>Additional: </span>{entry.additionalControls}
                 </div>
               )}
+              {isAdmin && isCustom && (
+                <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 10, paddingTop: 10, borderTop: '1px solid #E4DDD2' }}>
+                  <button onClick={() => startEdit(entry)}
+                    style={{ background: '#F5F2EB', color: '#5C5852', border: '1px solid #E4DDD2', borderRadius: 6, padding: '5px 12px', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Edit</button>
+                  <button onClick={() => deleteEntry(entry.id)}
+                    style={{ background: '#FAF0F1', color: '#8B2430', border: '1px solid #D4A0A6', borderRadius: 6, padding: '5px 12px', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
       {/* Footnote */}
-      <div style={{ marginTop: 20, padding: '12px 16px', background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 8, fontSize: 12, color: '#8C887E', fontFamily: sans }}>
-        Browse and search the hazard library here. To add any of these to an assessment, open or create a risk assessment and click <strong style={{ color: '#9A6B1E' }}>📚 Hazard library</strong>{isAdmin ? ' from the editor.' : '. Admin access is required to edit assessments.'}
+      <div style={{ marginTop: 20, padding: '12px 16px', background: '#FEFEFC', border: '1px solid #E4DDD2', borderRadius: 8, fontSize: 12, color: '#8C887E', fontFamily: sans, lineHeight: 1.55 }}>
+        Browse and search the hazard library here. To save a new entry, open or create a risk assessment and click <strong style={{ color: '#9A6B1E' }}>📚 + Library</strong> on any hazard row.
+        {isAdmin
+          ? <> Custom entries can be edited or deleted from this page.</>
+          : <> Admin access is required to add or edit entries.</>}
+        <br />
+        <span style={{ fontSize: 11, color: '#C8C2B8' }}>Custom entries are saved in your browser only (localStorage). They don't yet sync across devices.</span>
       </div>
     </div>
   );

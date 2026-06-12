@@ -65,7 +65,7 @@ function buildHazardDefaults(group) {
 
 const css = {
   btn:   (bg, color, extra = {}) => ({ background: bg, color, border: 'none', borderRadius: 7, padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', ...extra }),
-  input: { width: '100%', padding: '9px 12px', borderRadius: 7, border: '1px solid #e2e8f0', fontSize: 14, color: '#1C1C1A', background: '#fff', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
+  input: { width: '100%', padding: '9px 12px', borderRadius: 7, border: '1px solid #E4DDD2', fontSize: 14, color: '#1C1C1A', background: '#FEFEFC', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
   label: { display: 'block', fontSize: 11, fontWeight: 700, color: '#8C887E', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' },
 };
 
@@ -178,7 +178,7 @@ export default function RAWizard({ onConfirm, onCancel }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ background: '#fff', borderRadius: 14, width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+      <div style={{ background: '#FEFEFC', borderRadius: 14, width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
 
         {/* Header */}
         <div style={{ background: '#1A3D2B', borderRadius: '14px 14px 0 0', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -285,7 +285,7 @@ export default function RAWizard({ onConfirm, onCancel }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <span style={{ fontSize: 12, fontWeight: 700, color: '#2A2A28', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{group}</span>
                       <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => toggleGroup(group, true)} style={{ fontSize: 11, color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>All</button>
+                        <button onClick={() => toggleGroup(group, true)} style={{ fontSize: 11, color: '#9A6B1E', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>All</button>
                         <button onClick={() => toggleGroup(group, false)} style={{ fontSize: 11, color: '#C8C2B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>None</button>
                         <span style={{ fontSize: 11, color: '#C8C2B8' }}>{groupSelected}/{items.length}</span>
                       </div>
@@ -321,9 +321,9 @@ export default function RAWizard({ onConfirm, onCancel }) {
                   </p>
                   <div style={{ marginBottom: 14 }}>
                     <div onClick={() => setChosenTemplate(null)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 9, border: '2px solid', borderColor: chosenTemplate === null ? '#1A3D2B' : '#E4DDD2', background: chosenTemplate === null ? '#0f172a0d' : '#fff', cursor: 'pointer', marginBottom: 8 }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 9, border: '2px solid', borderColor: chosenTemplate === null ? '#1A3D2B' : '#E4DDD2', background: chosenTemplate === null ? '#1A3D2B12' : '#fff', cursor: 'pointer', marginBottom: 8 }}>
                       <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid', borderColor: chosenTemplate === null ? '#1A3D2B' : '#C8C2B8', background: chosenTemplate === null ? '#1A3D2B' : '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {chosenTemplate === null && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
+                        {chosenTemplate === null && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FEFEFC' }} />}
                       </div>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 13, color: '#1C1C1A' }}>Use my custom hazard selection</div>
@@ -334,7 +334,7 @@ export default function RAWizard({ onConfirm, onCancel }) {
                       <div key={t.id} onClick={() => setChosenTemplate(t)}
                         style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 9, border: '2px solid', borderColor: chosenTemplate?.id === t.id ? '#9A6B1E' : '#E4DDD2', background: chosenTemplate?.id === t.id ? '#FDF5E4' : '#F5F2EB', cursor: 'pointer', marginBottom: 8 }}>
                         <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid', borderColor: chosenTemplate?.id === t.id ? '#9A6B1E' : '#C8C2B8', background: chosenTemplate?.id === t.id ? '#9A6B1E' : '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {chosenTemplate?.id === t.id && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
+                          {chosenTemplate?.id === t.id && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FEFEFC' }} />}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 700, fontSize: 13, color: '#1C1C1A' }}><span style={{ color: '#C8C2B8', marginRight: 6 }}>{t.ref}</span>{t.name}</div>
@@ -357,7 +357,7 @@ export default function RAWizard({ onConfirm, onCancel }) {
           )}
 
           {/* ── Navigation buttons ── */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 28, paddingTop: 20, borderTop: '1px solid #f1f5f9' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 28, paddingTop: 20, borderTop: '1px solid #E4DDD2' }}>
             <button onClick={step === 1 ? onCancel : () => setStep(s => s - 1)} style={css.btn('#F5F2EB', '#5C5852')}>
               {step === 1 ? 'Cancel' : '← Back'}
             </button>
