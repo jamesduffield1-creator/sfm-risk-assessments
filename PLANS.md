@@ -221,20 +221,20 @@ edited and deleted from the library page.
 
 ---
 
-## Phase 4 — Audit log viewer
+## Phase 4 — Audit log viewer ✓ DONE (commit `19a33db`, 16 Jun 2026)
 
 The Worker already appends to `audit_log` (timestamp, message, UA). Surface it:
 
 - New tab in `StaffSettings.jsx`: "Audit Log" (admin-only page already).
-- Read via existing `sheetsRead('audit_log!A2:C')` — add an exported
-  `loadAuditLog()` in `storage.js` that returns `[{ ts, message, agent }]`
-  reversed (newest first), capped to the last 200 rows.
-- Render as a simple timeline list: date (en-GB), message, muted UA string.
-  Show a friendly empty/error state when Sheets isn't configured.
+- Read via existing `sheetsRead('audit_log!A2:C')` — added exported
+  `loadAuditLog()` in `storage.js` that returns rows reversed (newest first),
+  capped to the last 200 rows.
+- Renders as a timeline list: date (en-GB), message, muted UA string.
+  Shows friendly empty/not-configured states when Sheets isn't set up.
 - No new write paths needed.
 
 **Acceptance:** Settings → Audit Log shows recent entries newest-first; making a
-save then refreshing the tab shows the new entry.
+save then refreshing the tab shows the new entry. ✓ Confirmed by James.
 
 ---
 
