@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { loadAuditLog } from '../utils/storage';
 
 const css = {
   input: { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #E4DDD2', fontSize: 13, color: '#1C1C1A', background: '#FEFEFC', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
@@ -27,6 +28,8 @@ export default function StaffSettings({
   const [syncStatus, setSyncStatus]     = useState(null); // null | 'syncing' | 'success' | 'error'
   const [syncMsg, setSyncMsg]           = useState('');
   const [importMsg, setImportMsg]       = useState('');
+  const [auditLog, setAuditLog]         = useState(undefined); // undefined=not fetched, null=N/A, []=empty, [...]=loaded
+  const [auditError, setAuditError]     = useState(null);
   const fileInputRef = useRef(null);
 
   const updateStaffMember = (idx, field, value) => {
@@ -106,6 +109,16 @@ export default function StaffSettings({
     reader.readAsText(file);
   };
 
+  const switchTab = (key) => {
+    setTab(key);
+    if (key === 'audit_log' && auditLog === undefined) {
+      setAuditError(null);
+      loadAuditLog()
+        .then(rows => setAuditLog(rows))
+        .catch(err => { setAuditLog([]); setAuditError(err.message); });
+    }
+  };
+
   const showSaveButton = tab === 'staff' || tab === 'settings';
 
   return (
@@ -128,8 +141,9 @@ export default function StaffSettings({
           ['settings',   'Church Settings'],
           ['compliance', 'Compliance Info'],
           ['data',       'Data & Backup'],
+          ['audit_log',  'Audit Log'],
         ].map(([key, label]) => (
-          <button key={key} onClick={() => setTab(key)} style={{
+          <button key={key} onClick={() => switchTab(key)} style={{
             background: 'transparent', border: 'none',
             borderBottom: tab === key ? '2px solid #C8952E' : '2px solid transparent',
             color: tab === key ? '#1C1C1A' : '#8C887E',
@@ -217,6 +231,76 @@ export default function StaffSettings({
               ))}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── Audit Log ── */}
+      {tab === 'audit_log' && (
+        <div style={{ maxWidth: 760 }}>
+          <p style={{ fontSize: 13, color: '#8C887E', margin: '0 0 20px', lineHeight: 1.55 }}>
+            A record of every save, delete, and sync operation written to Google Sheets.
+            {auditLog === null && ' Connect Google Sheets via GitHub Secrets to enable audit logging.'}
+          </p>
+
+          {/* Not configured */}
+          {auditLog === null && (
+            <div style={{ textAlign: 'center', padding: '48px 0', color: '#C8C2B8', fontSize: 14 }}>
+              Audit log requires Google Sheets to be configured.
+            </div>
+          )}
+
+          {/* Loading */}
+          {auditLog === undefined && !auditError && (
+            <div style={{ textAlign: 'center', padding: '48px 0', color: '#C8C2B8', fontSize: 14 }}>
+              Loading audit log…
+            </div>
+          )}
+
+          {/* Error */}
+          {auditError && (
+            <div style={{ background: '#FAF0F1', border: '1px solid #D4A0A6', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#8B2430' }}>
+              Could not load audit log: {auditError}
+            </div>
+          )}
+
+          {/* Empty */}
+          {Array.isArray(auditLog) && auditLog.length === 0 && !auditError && (
+            <div style={{ textAlign: 'center', padding: '48px 0', color: '#C8C2B8', fontSize: 14 }}>
+              No entries yet. Save an assessment to create the first log entry.
+            </div>
+          )}
+
+          {/* Entries */}
+          {Array.isArray(auditLog) && auditLog.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {auditLog.map((row, i) => {
+                const [ts, msg, ua] = row;
+                const date = ts ? new Date(ts).toLocaleString('en-GB', {
+                  day: '2-digit', month: 'short', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit',
+                }) : '—';
+                return (
+                  <div key={i} style={{
+                    display: 'grid', gridTemplateColumns: '160px 1fr',
+                    padding: '10px 16px',
+                    background: i % 2 === 0 ? '#FEFEFC' : '#F5F2EB',
+                    borderRadius: i === 0 ? '8px 8px 0 0' : i === auditLog.length - 1 ? '0 0 8px 8px' : 0,
+                    border: '1px solid #E4DDD2',
+                    borderTop: i === 0 ? '1px solid #E4DDD2' : 'none',
+                  }}>
+                    <div style={{ fontSize: 11, color: '#8C887E', fontVariantNumeric: 'tabular-nums', paddingTop: 1 }}>{date}</div>
+                    <div>
+                      <div style={{ fontSize: 13, color: '#1C1C1A' }}>{msg || '—'}</div>
+                      {ua && <div style={{ fontSize: 10, color: '#C8C2B8', marginTop: 2 }}>{ua}</div>}
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{ fontSize: 11, color: '#C8C2B8', marginTop: 8 }}>
+                Showing {auditLog.length} most recent {auditLog.length === 200 ? '(capped at 200)' : 'entries'}.
+              </div>
+            </div>
+          )}
         </div>
       )}
 

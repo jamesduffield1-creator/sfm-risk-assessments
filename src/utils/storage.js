@@ -289,6 +289,13 @@ async function appendAuditLog(message) {
   try { await sheetsWrite('audit_log!A:C', [row], 'append'); } catch (_) {}
 }
 
+export async function loadAuditLog() {
+  if (!SHEETS_ENABLED) return null; // null = Sheets not configured
+  const rows = await sheetsRead('audit_log!A2:C');
+  // Newest-first, capped at 200
+  return rows.slice(-200).reverse();
+}
+
 // ── localStorage helpers ──────────────────────────────────────────────────────
 const LS_KEY = 'sfm_ra_v2';
 
