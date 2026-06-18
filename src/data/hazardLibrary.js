@@ -1165,6 +1165,10 @@ export const BUILT_IN_LIBRARY = [
 ];
 
 // ── Load/save custom entries ──────────────────────────────────────────────────
+// localStorage is the instant cache; Google Sheets (hazard_library tab) is the
+// source of truth when configured, so custom entries sync across devices.
+
+import { loadHazardLibrary, saveHazardLibrary } from '../utils/storage';
 
 export function loadCustomLibrary() {
   try { return JSON.parse(localStorage.getItem(HL_LS_KEY)) || []; } catch { return []; }
@@ -1172,6 +1176,23 @@ export function loadCustomLibrary() {
 
 export function saveCustomLibrary(entries) {
   try { localStorage.setItem(HL_LS_KEY, JSON.stringify(entries)); } catch (_) {}
+  // Fire-and-forget push to Sheets — UI stays responsive; localStorage already holds it.
+  saveHazardLibrary(entries).catch(err => console.warn('Hazard library sync failed:', err));
+}
+
+// Pull the library from Sheets, refresh the localStorage cache, and return it.
+// Returns null when Sheets is unavailable (not configured, tab missing, offline)
+// so callers fall back to their existing localStorage copy.
+export async function refreshCustomLibrary() {
+  try {
+    const remote = await loadHazardLibrary();
+    if (remote === null) return null;
+    try { localStorage.setItem(HL_LS_KEY, JSON.stringify(remote)); } catch (_) {}
+    return remote;
+  } catch (err) {
+    console.warn('Hazard library load failed:', err);
+    return null;
+  }
 }
 
 export function getAllLibraryEntries() {

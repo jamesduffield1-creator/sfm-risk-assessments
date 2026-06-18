@@ -52,6 +52,24 @@ const HAZARD_COLS = [
 
 const STAFF_COLS   = ['key','label','name','email','phone'];
 
+// Custom hazard library entries — tab "hazard_library", cols A–H.
+const HAZARD_LIB_COLS = ['id','category','hazard','who','existingControls','likelihood','severity','additionalControls'];
+
+function rowToHazardLib(row) {
+  const obj = {};
+  HAZARD_LIB_COLS.forEach((col, i) => { obj[col] = row[i] ?? ''; });
+  obj.likelihood = Number(obj.likelihood) || 2;
+  obj.severity   = Number(obj.severity)   || 2;
+  return obj;
+}
+
+function hazardLibToRow(e) {
+  return HAZARD_LIB_COLS.map(col => {
+    const v = e[col];
+    return (v === null || v === undefined) ? '' : String(v);
+  });
+}
+
 function rowToRA(row) {
   const obj = {};
   RA_COLS.forEach((col, i) => { obj[col] = row[i] ?? ''; });
@@ -281,6 +299,24 @@ export async function syncToSheets(assessments) {
   }
 
   await appendAuditLog(`Migrated ${assessments.length} assessments from localStorage to Sheets`);
+}
+
+// ── Custom hazard library (cross-device sync) ─────────────────────────────────
+// Returns null if Sheets isn't configured (caller keeps its localStorage copy).
+// Throws if the hazard_library tab doesn't exist yet — caller should catch.
+export async function loadHazardLibrary() {
+  if (!SHEETS_ENABLED) return null;
+  const rows = await sheetsRead('hazard_library!A2:H');
+  return rows.map(rowToHazardLib);
+}
+
+export async function saveHazardLibrary(entries) {
+  if (!SHEETS_ENABLED) return;
+  await sheetsWrite('hazard_library!A2:H', [], 'clear');
+  if (entries.length > 0) {
+    await sheetsWrite('hazard_library!A2:H', entries.map(hazardLibToRow), 'update');
+  }
+  await appendAuditLog(`Updated hazard library (${entries.length} custom ${entries.length === 1 ? 'entry' : 'entries'})`);
 }
 
 async function appendAuditLog(message) {

@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   BUILT_IN_LIBRARY, LIBRARY_CATEGORIES,
-  loadCustomLibrary, saveCustomLibrary,
+  loadCustomLibrary, saveCustomLibrary, refreshCustomLibrary,
 } from '../data/hazardLibrary';
 import { getRiskLevel } from '../data/riskData';
 
@@ -17,6 +17,11 @@ export default function HazardLibrary({ isAdmin }) {
   const [customEntries, setCustomEntries] = useState(() => loadCustomLibrary());
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft]         = useState(null);
+
+  // Pull the latest custom entries from Sheets on mount (localStorage shows instantly).
+  useEffect(() => {
+    refreshCustomLibrary().then(remote => { if (remote) setCustomEntries(remote); });
+  }, []);
 
   const customIds  = useMemo(() => new Set(customEntries.map(c => c.id)), [customEntries]);
   const allEntries = useMemo(() => [...BUILT_IN_LIBRARY, ...customEntries], [customEntries]);
@@ -207,7 +212,7 @@ export default function HazardLibrary({ isAdmin }) {
           ? <> Custom entries can be edited or deleted from this page.</>
           : <> Admin access is required to add or edit entries.</>}
         <br />
-        <span style={{ fontSize: 11, color: '#C8C2B8' }}>Custom entries are saved in your browser only (localStorage). They don't yet sync across devices.</span>
+        <span style={{ fontSize: 11, color: '#C8C2B8' }}>Custom entries sync to Google Sheets and are shared across all devices. A local copy is also kept for offline use.</span>
       </div>
     </div>
   );

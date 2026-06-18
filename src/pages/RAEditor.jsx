@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { getRiskLevel, RISK_LEVELS, WHO_AT_RISK_OPTIONS, HAZARD_BANK, CATEGORY_COLORS } from '../data/riskData';
-import { LIBRARY_CATEGORIES, getAllLibraryEntries, loadCustomLibrary, saveCustomLibrary } from '../data/hazardLibrary';
+import { LIBRARY_CATEGORIES, getAllLibraryEntries, loadCustomLibrary, saveCustomLibrary, refreshCustomLibrary } from '../data/hazardLibrary';
 
 const css = {
   input:    { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #E4DDD2', fontSize: 13, color: '#1C1C1A', background: '#FEFEFC', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' },
@@ -38,6 +38,11 @@ export default function RAEditor({ ra, staff, isAdmin, saving, onSave, onPreview
   const [customEntries, setCustomEntries] = useState(() => loadCustomLibrary());
   const [saveToLibIdx, setSaveToLibIdx] = useState(null);
   const [saveToLibCat, setSaveToLibCat] = useState(LIBRARY_CATEGORIES.find(c => c !== 'All') || 'Slips, Trips & Falls');
+
+  // Sync custom library from Sheets on mount (localStorage shows instantly).
+  useEffect(() => {
+    refreshCustomLibrary().then(remote => { if (remote) setCustomEntries(remote); });
+  }, []);
   const [dirty, setDirty] = useState(false);
 
   const update = (field, value) => { setLocal(l => ({ ...l, [field]: value })); setDirty(true); };
