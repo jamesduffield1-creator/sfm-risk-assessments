@@ -30,6 +30,8 @@ export default function RAList({ assessments, filterCat, setFilterCat, filterSta
   const categories = ['All', ...['Premises','Regular Activities','Events','Maintenance','Operations'].filter(c => assessments.some(a => a.category === c))];
 
   const filtered = assessments.filter(a => {
+    // Archived assessments are hidden everywhere unless the Archived chip is active.
+    if (a.status === 'archived' && filterStatus !== 'archived') return false;
     if (filterCat !== 'All' && a.category !== filterCat) return false;
     if (filterStatus && a.status !== filterStatus) return false;
     if (filterFlag === 'overdue' && !(a.status === 'active' && isOverdue(a.reviewDate))) return false;
@@ -39,6 +41,7 @@ export default function RAList({ assessments, filterCat, setFilterCat, filterSta
   });
 
   const needsReviewCount = assessments.filter(a => a.status === 'needs_review').length;
+  const archivedCount    = assessments.filter(a => a.status === 'archived').length;
   const hasActiveFilter = filterStatus || filterFlag;
 
   return (
@@ -58,7 +61,7 @@ export default function RAList({ assessments, filterCat, setFilterCat, filterSta
       </div>
 
       {/* Status filters */}
-      {(hasActiveFilter || needsReviewCount > 0) && (
+      {(hasActiveFilter || needsReviewCount > 0 || archivedCount > 0) && (
         <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <span style={{ fontSize: 10, fontWeight: 700, color: '#C8C2B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 2, fontFamily: sans }}>Filter:</span>
           {[
@@ -68,6 +71,7 @@ export default function RAList({ assessments, filterCat, setFilterCat, filterSta
             ...(needsReviewCount > 0 ? [{ label: `Needs Review (${needsReviewCount})`, status: 'needs_review', flag: null }] : []),
             { label: 'Overdue', status: null, flag: 'overdue' },
             { label: 'High/Critical', status: null, flag: 'high_critical' },
+            ...(archivedCount > 0 ? [{ label: `Archived (${archivedCount})`, status: 'archived', flag: null }] : []),
           ].map(f => {
             const active = filterStatus === f.status && filterFlag === f.flag;
             return (

@@ -20,6 +20,10 @@ function AppShell() {
   const [filterStatus, setFilterStatus] = useState(null); // null | 'active' | 'draft' | 'needs_review'
   const [filterFlag, setFilterFlag] = useState(null);    // null | 'overdue' | 'high_critical'
   const [showWizard, setShowWizard] = useState(false);
+  // Read-only share link: ?view=<ra-id> opens a single assessment with no nav/admin.
+  const [sharedViewId] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get('view'); } catch (_) { return null; }
+  });
 
   const nav = (p, data) => {
     setPage(p);
@@ -28,6 +32,28 @@ function AppShell() {
   };
 
   const churchName = ra.settings?.church_name || 'St Francis Mackworth';
+
+  // ── Shared read-only view ─────────────────────────────────────────────────
+  if (sharedViewId) {
+    const exitShare = () => {
+      try { window.history.replaceState({}, '', window.location.pathname); } catch (_) {}
+      window.location.reload();
+    };
+    const wrap = (children) => (
+      <div style={{ minHeight: '100vh', background: '#F5F2EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', system-ui, sans-serif", padding: 24 }}>{children}</div>
+    );
+    if (ra.loading) return wrap(<div style={{ color: '#8C887E', fontSize: 15 }}>Loading assessment…</div>);
+    const found = ra.assessments.find(a => a.id === sharedViewId);
+    if (!found) return wrap(
+      <div style={{ textAlign: 'center', maxWidth: 420 }}>
+        <div style={{ fontSize: 42, marginBottom: 12, color: '#C8952E' }}>✝</div>
+        <h1 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 600, color: '#1C1C1A', fontFamily: "'Playfair Display', Georgia, serif" }}>Assessment not found</h1>
+        <p style={{ margin: '0 0 20px', fontSize: 14, color: '#8C887E', lineHeight: 1.55 }}>This shared risk assessment is no longer available, or the link is incorrect.</p>
+        <button onClick={exitShare} style={{ background: '#1A3D2B', color: '#fff', border: 'none', borderRadius: 7, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Go to the app</button>
+      </div>
+    );
+    return <RAPreview ra={found} staff={ra.staff} settings={ra.settings} shared onBack={exitShare} />;
+  }
 
   if (page === 'preview' && previewRA) {
     return <RAPreview ra={previewRA} staff={ra.staff} settings={ra.settings} onBack={() => setPage('list')} />;

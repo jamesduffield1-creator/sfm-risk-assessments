@@ -108,9 +108,10 @@ function generateHTML(ra, settings) {
 </body></html>`;
 }
 
-export default function RAPreview({ ra, settings, onBack }) {
+export default function RAPreview({ ra, settings, onBack, shared = false }) {
   const [driveStatus, setDriveStatus] = useState('idle');
   const [driveLink, setDriveLink] = useState('');
+  const [copied, setCopied] = useState(false);
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const churchName = settings?.church_name || CHURCH;
   const filename = `${ra.ref || 'RA'}-${(ra.name || 'Risk-Assessment').replace(/[^a-zA-Z0-9]+/g, '-')}-STF`;
@@ -119,6 +120,17 @@ export default function RAPreview({ ra, settings, onBack }) {
     const html = generateHTML(ra, settings);
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     window.open(URL.createObjectURL(blob), '_blank');
+  };
+
+  const copyShareLink = async () => {
+    const url = `${window.location.origin}${window.location.pathname}?view=${ra.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (_) {
+      window.prompt('Copy this read-only link:', url);
+    }
   };
 
   const saveToDrive = async () => {
@@ -157,14 +169,21 @@ export default function RAPreview({ ra, settings, onBack }) {
       {/* Toolbar */}
       <div style={{ background: '#1A3D2B', borderBottom: '1px solid rgba(0,0,0,.12)', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60, flexShrink: 0, position: 'sticky', top: 0, zIndex: 100, boxShadow: '2px 0 16px rgba(0,0,0,.15)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button onClick={onBack} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.2)', color: 'rgba(255,255,255,.6)', borderRadius: 6, padding: '6px 12px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>← Back</button>
+          {shared
+            ? <span style={{ color: '#C8952E', fontSize: 18, lineHeight: 1 }}>✝</span>
+            : <button onClick={onBack} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.2)', color: 'rgba(255,255,255,.6)', borderRadius: 6, padding: '6px 12px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>← Back</button>}
           <div>
             <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 8 }}>{ra.ref}</span>
             <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,.92)', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.01em' }}>{ra.name}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {driveStatus === 'idle' && (
+          {!shared && (
+            <button onClick={copyShareLink} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.2)', color: copied ? '#C8952E' : 'rgba(255,255,255,.7)', borderRadius: 7, padding: '8px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+              {copied ? '✓ Link copied' : '🔗 Copy share link'}
+            </button>
+          )}
+          {!shared && driveStatus === 'idle' && (
             <button onClick={saveToDrive} style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#C8952E', color: '#fff', border: 'none', borderRadius: 7, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
               📂 Save to Google Drive
             </button>
