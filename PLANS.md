@@ -238,20 +238,28 @@ save then refreshing the tab shows the new entry. ✓ Confirmed by James.
 
 ---
 
-## Phase 5 — Backlog (in rough priority order, not yet planned in detail)
+## Phase 5 — Backlog
 
-1. **Read-only share links** — e.g. `?view=<ra-id>` opens RAPreview directly
-   without admin. Needs hash-param routing in `App.jsx`; everything else exists.
-2. **Audit log identity** — append `'admin'`/`'viewer'` to audit rows; trivial
-   once 4 lands.
-3. **Archived filter** — editor can set `archived` but RAList has no filter chip
-   for it; archived RAs are visible under All only. Add a chip.
-4. **Hazard library → Sheets sync** — `hazard_library` tab, merge on load.
+1. ✓ **DONE** (`0c74165`) **Read-only share links** — `?view=<ra-id>` opens
+   RAPreview directly without admin (query-param routing in `App.jsx`, loading +
+   not-found states). "Copy share link" button in the preview toolbar.
+2. ~~**Audit log identity**~~ — **SKIPPED** (James, 18 Jun 2026): with a single
+   shared admin password every writer is "admin", so the tag adds nothing.
+   Revisit only if per-person logins are introduced.
+3. ✓ **DONE** (`0c74165`) **Archived filter** — archived RAs hidden by default,
+   revealed via an "Archived (n)" chip in RAList.
+4. ✓ **DONE** (`8993812`) **Hazard library → Sheets sync** — custom entries
+   persist to a `hazard_library` tab (cols A–H) and sync across devices;
+   localStorage stays as the instant/offline cache. Null-safe if the tab is
+   missing. **Manual step:** add a tab named exactly `hazard_library` to the
+   Google Sheet with header row A1:H1 = `id, category, hazard, who,
+   existingControls, likelihood, severity, additionalControls`.
 5. **Email reminders for overdue reviews** — scheduled Cloudflare Worker reading
-   the sheet; out of app scope, needs its own design.
+   the sheet; out of app scope, needs its own design. **Not started.**
 6. **Concurrency hardening** — `saveAssessment` does clear-then-rewrite of the
    whole hazards tab; two admins saving simultaneously can clobber each other.
    Low likelihood (one admin: James), revisit only if more admins are added.
+   **Deferred.**
 
 ---
 
